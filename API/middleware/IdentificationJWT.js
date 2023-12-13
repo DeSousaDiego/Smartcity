@@ -24,6 +24,7 @@ module.exports.identification = async (req, res, next) => {
             res.sendStatus(400);
         }
     } else {
+        console.log('no headerAuth');
         res.sendStatus(401);
     }
 };

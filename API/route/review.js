@@ -7,32 +7,24 @@ const router = new Router;
 const multer = require("multer");
 const upload = multer();
 
-router.get('/:id', reviewController.getReview);
-router.get('/', reviewController.getAllReview);
+router.get('/:id', JWTMiddleWare.identification, reviewController.getReview);
+router.get('/', JWTMiddleWare.identification, reviewController.getAllReviews);
 
 router.post('/', upload.fields([
     {name:"date", maxCount :1},
     {name:"rating", maxCount :1},
     {name:"title", maxCount :1},
     {name:"content", maxCount :1},
-    {name:"likes_counter", maxCount :1},
-    {name:"dislikes_counter", maxCount :1},
     {name:"user_id", maxCount :1},
     {name:"book_id", maxCount :1}
-]) , reviewController.postReview);
+]) , JWTMiddleWare.identification, reviewController.postReview);
 
 router.patch('/:id', upload.fields([
-    {name: "id", maxCount:1},
-    {name:"date", maxCount :1},
     {name:"rating", maxCount :1},
     {name:"title", maxCount :1},
     {name:"content", maxCount :1},
-    {name:"likes_counter", maxCount :1},
-    {name:"dislikes_counter", maxCount :1},
-    {name:"user_id", maxCount :1},
-    {name:"book_id", maxCount :1}
-]) , reviewController.updateReview);
+]) , JWTMiddleWare.identification, reviewController.updateReview);
 
-router.delete('/:id', reviewController.deleteReview);
+router.delete('/:id', JWTMiddleWare.identification, reviewController.deleteReview);
 
 module.exports = router;

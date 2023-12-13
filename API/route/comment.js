@@ -7,20 +7,19 @@ const router = new Router;
 const multer = require("multer");
 const upload = multer();
 
-router.get('/:id', CommentController.getComment);
-router.get('/all/:id', CommentController.getAllCommentsFromReviewId);
+router.get('/:id', JWTMiddleWare.identification, CommentController.getComment);
+router.get('/all/:id', JWTMiddleWare.identification, CommentController.getAllCommentsFromReviewId);
 
 router.post('/', upload.fields([
     {name:"content", maxCount :1},
-    {name:"authorId", maxCount :1},
     {name:"reviewId", maxCount :1}
-]) , CommentController.postComment);
+]) , JWTMiddleWare.identification, CommentController.postComment);
 router.patch('/:id', upload.fields([
     {name:"content", maxCount :1},
     {name:"authorId", maxCount :1},
     {name:"reviewId", maxCount :1}
-]), CommentController.updateComment);
+]), JWTMiddleWare.identification, CommentController.updateComment);
 
-router.delete('/:id',   CommentController.deleteComment);
+router.delete('/:id', JWTMiddleWare.identification, CommentController.deleteComment);
 
 module.exports = router;

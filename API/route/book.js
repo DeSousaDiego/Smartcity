@@ -28,7 +28,7 @@ router.post('/', JWTMiddleWare.identification, AuthoMiddleware.mustBeAdmin, uplo
     {name: 'illustrator', maxCount: 1},
     {name: 'publishing_house', maxCount: 1},
     {name : 'image', maxCount : 1}
-]), BookControlleur.createBook);
+]), JWTMiddleWare.identification, BookControlleur.createBook);
 
 router.patch('/',JWTMiddleWare.identification, AuthoMiddleware.mustBeAdmin,upload.fields([
     {name: 'isbn', maxCount: 1},
@@ -42,7 +42,7 @@ router.patch('/',JWTMiddleWare.identification, AuthoMiddleware.mustBeAdmin,uploa
     {name: 'illustrator', maxCount: 1},
     {name: 'publishing_house', maxCount: 1},
     {name : 'image', maxCount : 1}
-]),BookControlleur.updateBook);
+]), JWTMiddleWare.identification, BookControlleur.updateBook);
 
 router.delete('/:id',JWTMiddleWare.identification, AuthoMiddleware.mustBeAdmin,BookControlleur.deleteBook);
 

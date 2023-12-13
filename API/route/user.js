@@ -18,13 +18,15 @@ router.post('/', upload.fields([
     {name: 'country', maxCount: 1},
     {name: 'phone_number', maxCount: 1},
     {name: 'news_letter', maxCount: 1},
-    {name: 'profile_picture_path', maxCount: 1}
+    {name: 'image', maxCount: 1}
 ]), JWTMiddleWare.identification, UserControleur.createUser);
 
 router.post('/login',upload.fields([
     {name: 'username', maxCount: 1},
     {name: 'password', maxCount: 1}
 ]), UserControleur.login);
+
+router.get('/logout', JWTMiddleWare.identification, UserControleur.logout);
 
 router.patch('/', upload.fields([
     {name: 'id', maxCount: 1},
@@ -34,7 +36,8 @@ router.patch('/', upload.fields([
     {name: 'role', maxCount: 1, default: 'user'},
     {name: 'country', maxCount: 1},
     {name: 'phone_number', maxCount: 1},
-    {name: 'news_letter', maxCount: 1}
+    {name: 'news_letter', maxCount: 1},
+    {name: 'image', maxCount: 1}
 ]), JWTMiddleWare.identification, UserControleur.updateUser);
 router.delete('/:id', upload.fields([
     {name: 'username', maxCount: 1},

@@ -5,13 +5,13 @@ const hash = require('../utils/utils');
 
 const pool = require('../modele/database');
 const UserModele = require('../modele/userDB');
-const {userSchema} = require('../schema/ValidationSchemas');
-const saveImage = require('../modele/imageManager');
+const {userSchema, userUpdateScheme} = require('../schema/ValidationSchemas');
+const {saveImage} = require('../modele/imageManager');
 const imageSize = require('image-size');
 const uuid = require('uuid');
 const fs = require('fs');
 const { profile } = require("console");
-const destFolderImages = "./upload/images";
+const destFolderImages = "./upload/avatar";
 
 module.exports.login = async (req, res) => {
     
@@ -59,16 +59,31 @@ module.exports.login = async (req, res) => {
     }
 }
 
+module.exports.logout = async (req, res) => {
+    console.log("req.session: ", req.session);
+    if(req.session){
+        req.session = null;
+        res.sendStatus(204);
+    } else {
+        res.sendStatus(401);
+    }
+}
+
 module.exports.updateUser = async (req, res) => {
     if(req.session){
         const client = await pool.connect();
         const toUpdate = req.body;
         const newData = {};
         const userObj = req.session;
+        const image = req.files?.image || null;
+        let imageName = null;
+        console.log("id: ", toUpdate.id);
         const {rows: users} = await UserModele.getUserById(client, toUpdate.id);
         const user = users[0];
         let doUpdate = false;
         newData.id = toUpdate.id;
+        console.log("userObj: ", userObj);
+        console.log("user: ", user);
         // if the user is a simple user and the id is not his id, he can't update another user
         if(userObj.id !== toUpdate.id && userObj.authLevel !== "admin"){
             res.sendStatus(401);
@@ -77,12 +92,21 @@ module.exports.updateUser = async (req, res) => {
         if(userObj.authLevel !== "admin"){
             toUpdate.role = user.role;
         }
-        
+
+        if (image) {
+            // Validate image dimensions
+            const dimensions = imageSize(image[0].buffer);
+            if (!dimensions.width || !dimensions.height) {
+                return res.status(400).json("Le fichier n\'est pas une image valide.");
+            }
+            imageName = uuid.v4();
+        }
 
         if(
             toUpdate.username !== undefined ||
             toUpdate.email_address !== undefined ||
             toUpdate.password !== undefined ||
+            toUpdate.password2 !== undefined ||
             toUpdate.role !== undefined ||
             toUpdate.country !== undefined ||
             toUpdate.phone_number !== undefined ||
@@ -95,25 +119,71 @@ module.exports.updateUser = async (req, res) => {
             newData.username = toUpdate.username;
             newData.email_address = toUpdate.email_address;
             newData.password = toUpdate.password;
+            newData.password2 = toUpdate.password2;
             newData.role = toUpdate.role;
             newData.country = toUpdate.country;
             newData.phone_number = toUpdate.phone_number;
             newData.news_letter = toUpdate.news_letter;
+            newData.image = imageName;
         }
 
         try{
-            await UserModele.updateUser(
-                client,
-                newData.id,
-                newData.username,
-                newData.email_address,
-                newData.password,
-                newData.role,
-                newData.country,
-                newData.phone_number,
-                newData.news_letter
-            );
-            res.sendStatus(204);
+            const results = userUpdateScheme.safeParse({
+                username: newData.username,
+                email_address: newData.email_address,
+                password: newData.password,
+                password2: newData.password2,
+                role: newData.role,
+                country: newData.country,
+                phone_number: newData.phone_number,
+                news_letter: (newData.news_letter === "true"),
+                image: imageName
+            });
+
+            if (!results.success) {
+                console.log("results.error: ", results.error);
+                res.status(400).json(results.error);
+            } else {
+                const newUser = results.data;
+
+                await UserModele.updateUser(
+                    client,
+                    toUpdate.id,
+                    newUser.username,
+                    newUser.email_address,
+                    newUser.password,
+                    newUser.role,
+                    newUser.country,
+                    newUser.phone_number,
+                    newUser.news_letter,
+                    imageName,
+                );
+                let fileNameToDelete = null;
+                let filePath = null;
+                const {rows} = await UserModele.getUserById(client, toUpdate.id);
+                console.log("rows: ", rows);
+                if(rows[0].profile_picture_path){
+                    fileNameToDelete = rows[0].profile_picture_path
+                    filePath = `${destFolderImages}/${fileNameToDelete}.jpeg`;
+                    // Vérifier si le fichier existe avant de le supprimer
+                    if (fs.existsSync(filePath)) {
+                        // Supprimer le fichier
+                        fs.unlinkSync(filePath);
+                        console.log(`Le fichier ${fileNameToDelete} a été supprimé.`);
+                    }
+                }
+                if (image) {
+                    try {
+                        await saveImage(image[0].buffer, imageName, destFolderImages);
+                    } catch (error) {
+                        console.error(error);
+                        res.status(500).json("Erreur lors de la mise à jour de l'image");
+                    }
+                }
+                else{
+                    res.sendStatus(204);
+                }
+            }
         }
         catch (e) {
             console.error(e);
@@ -182,6 +252,7 @@ module.exports.createUser = async (req, res) => {
     const client = await pool.connect();
     const newData = req.body;
     const image = req.files?.image || null;
+    console.log("image: ", image);
     const userObj = req.session;
     let imageName = null;
 
@@ -193,43 +264,59 @@ module.exports.createUser = async (req, res) => {
             return res.status(400).json("Le fichier n\'est pas une image valide.");
         }
         imageName = uuid.v4();
+        console.log("imageName: ", imageName);
     }
     
     if (userObj.role !== "admin") {
         newData.role = "user";
     }
     try{
-        const newUser = userSchema.parse({
+        console.log("newData: ", newData);
+        const result = userSchema.safeParse({
             username: newData.username,
             password: newData.password,
+            password2: newData.password2,
             email_address: newData.email_address,
             role: newData.role,
             country: newData.country,
             phone_number: newData.phone_number,
             news_letter: (newData.news_letter === "true"),
-            profile_picture_path: imageName
+            image: imageName
         });
-        await UserModele.createUser(
-            client,
-            newUser.username,
-            newUser.password,
-            newUser.email_address,
-            newUser.role,
-            newUser.country,
-            newUser.phone_number,
-            newUser.news_letter,
-            newUser.profile_picture_path
-        );
-        if (image) {
-            try {
-                await saveImage(image[0].buffer, imageName, destFolderImages);
-            } catch (error) {
-                res.sendStatus(500).json()
+        if(!result.success){
+            console.log("result.error: ", result.error);
+            res.status(400).json(result.error);
+        }
+        else{
+            const newUser = result.data;
+            console.log("newUser: ", newUser);
+            await UserModele.createUser(
+                client,
+                newUser.username,
+                newUser.password,
+                newUser.email_address,
+                newUser.role,
+                newUser.country,
+                newUser.phone_number,
+                newUser.news_letter,
+                imageName
+            );
+            console.log("newUser.image: ", newUser.image);
+            if (image) {
+                try {
+                    await saveImage(image[0].buffer, imageName, destFolderImages);
+                    console.log("image saved");
+                    res.sendStatus(201);
+                } catch (error) {
+                    console.log("error: ", error);
+                    res.sendStatus(500).json()
+                }
+            }
+            else{
+                res.sendStatus(201);
             }
         }
 
-
-        res.sendStatus(201);
     }
     catch (e) {
         console.error(e);

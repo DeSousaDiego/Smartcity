@@ -3,15 +3,17 @@ const commentModele = require('../modele/commentDB');
 const reviewModele = require('../modele/reviewDB');
 
 
-module.exports.getAllReview = async (req, res) => {
-    if(req.session === undefined){
+module.exports.getAllReviews = async (req, res) => {
+    if(req.session !== undefined){
     const client = await pool.connect();
     try{
-        const {rows: reviews} = await reviewModele.getAllReview(client);
+        const {rows: reviews} = await reviewModele.getAllReviews(client);
         if(reviews.length > 0){
             // display all reviews
+            console.log("reviews: ", reviews);
             res.json(reviews);
         } else {
+            console.log("No review found");
             res.sendStatus(404);
         }    }
     catch (e) {
@@ -25,7 +27,7 @@ module.exports.getAllReview = async (req, res) => {
 
 
 module.exports.getReview = async (req, res) => {
-    if(req.session === undefined){
+    if(req.session !== undefined){
     const client = await pool.connect();
     const idTexte = req.params.id; //attention ! Il s'agit de texte !
     const id = parseInt(idTexte);
@@ -52,12 +54,13 @@ module.exports.getReview = async (req, res) => {
 
 
 module.exports.postReview = async (req, res) => {
-    if(req.session === undefined){
-    const body = req.body;
-    const {title, content, book_id, rating} = body;
+    if(req.session !== undefined){
+    const review = req.body;
     const client = await pool.connect();
+    const userId = parseInt(req.session.id);
+    console.log("userId: ", userId);
     try{
-        const {rows} = await reviewModele.postReview(client, title, content, rating, 2, book_id);
+        const {rows} = await reviewModele.postReview(client, review.title, review.content, review.rating, userId, review.book_id);
         res.sendStatus(201).send(rows[0].id);
     } catch (error){
         console.error(error);
@@ -69,12 +72,14 @@ module.exports.postReview = async (req, res) => {
 }
 
 module.exports.updateReview = async (req, res) => {
-    if(req.session === undefined){
-    const {title, content, rating} = req.body;
+    if(req.session !== undefined){
+    const review = req.body;
     const idReview = parseInt(req.params.id);
+    console.log("idReview: ", idReview);
+    console.log("review: ", review);
     const client = await pool.connect();
     try{
-        await reviewModele.updateReview(client, idReview, title, content, rating);
+        await reviewModele.updateReview(client, idReview, review.title, review.content, review.rating);
         res.sendStatus(204);
     } catch (error){
         console.error(error);
@@ -86,7 +91,7 @@ module.exports.updateReview = async (req, res) => {
 }
 
 module.exports.deleteReview = async (req, res) => {
-    if(req.session === undefined){
+    if(req.session !== undefined){
     const idTexte = req.params.id;
     const id = parseInt(idTexte);
     const client = await pool.connect();
@@ -111,3 +116,5 @@ module.exports.deleteReview = async (req, res) => {
     }
 }
 };
+
+

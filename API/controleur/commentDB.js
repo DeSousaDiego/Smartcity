@@ -30,12 +30,14 @@ module.exports.getAllCommentsFromReviewId  = async (req, res) => {
     const client = await pool.connect();
     const idTexte = req.params.id; // attention ! Il s'agit de texte !
     const id = parseInt(idTexte);
+    console.log("id: ", id);
 
     try {
         if (isNaN(id)) {
             res.sendStatus(400);
         } else {
             const { rows: comments } = await commentModele.getAllCommentsFromReviewId(client, id);
+            console.log("comments: ", comments);
 
             if (comments.length > 0) {
                 // Si des commentaires sont trouvés, renvoyer tous les commentaires
@@ -57,7 +59,8 @@ module.exports.getAllCommentsFromReviewId  = async (req, res) => {
 
 module.exports.postComment = async (req, res) => {
     // const body = req.body;
-    const {content, review_id, user_id} = req.body;
+    const {content, review_id} = req.body;
+    const user_id = parseInt(req.session.id);
     const client = await pool.connect();
     try{
         console.log("req.body", req.body);

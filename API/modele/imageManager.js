@@ -10,3 +10,9 @@ module.exports.saveImage = (imageBuffer, imageName, destFolder) => {
         })
         .toFile(`${destFolder}/${imageName}.jpeg`);
 };
+
+module.exports.getImage = (imageName, destFolder) => {
+    return sharp(`${destFolder}/${imageName}.jpeg`)
+        .jpeg()
+        .toBuffer();
+}

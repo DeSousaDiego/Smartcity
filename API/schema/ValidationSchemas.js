@@ -5,9 +5,7 @@ const bookSchema = z.object({
   title: z.string().refine((title) => title.trim() !== '', {
     message: 'Title is required',
   }),
-  author: z.string().refine((author) => author.trim() !== '', {
-    message: 'Author is required',
-  }),
+  author: z.string().nullable().optional(),
   releasedYear: z.string().refine((releasedYear) => releasedYear.length === 4 && /^\d+$/.test(releasedYear), {
     message: 'ReleasedYear must be 4 digits',
   }),
@@ -40,21 +38,54 @@ const userSchema = z.object({
   email_address: z.string().email({
     message: 'Invalid email',
   }),
+  // compare the two passwords
   password: z.string().refine((password) => password.trim() !== '', {
+    message: 'Password is required',
+  }),
+  password2: z.string().refine((password2) => password2.trim() !== '', {
     message: 'Password is required',
   }),
   role: z.string().refine((role) => role.trim() !== '', {
     message: 'Role is required',
   }),
+  country: z.string().refine((country) => country.trim() !== '', {
+    message: 'Country is required',
+  }),
   // the following field is a phone number, can only be numbers but can have a + at the beginning, have - / and . and is optional
   phone_number: z.string().refine((phone_number) => /^(\+)?(\d|\-|\.)*$/.test(phone_number), {
     message: 'Invalid phone number',
   }).optional(),
+  news_letter: z.boolean(),
+  image: z.string().nullable().optional()
+}).refine((data) => data.password === data.password2, {
+  message: 'Passwords must match',
+});
+
+userUpdateScheme = z.object({
+  username: z.string().refine((username) => username.trim() !== '', {
+    message: 'Username is required',
+  }).optional(),
+  email_address: z.string().email({
+    message: 'Invalid email',
+  }).optional(),
+  // compare the two passwords
+  password: z.string().optional(),
+  password2: z.string().optional(),
+  role: z.string().refine((role) => role.trim() !== '', {
+    message: 'Role is required',
+  }).optional(),
   country: z.string().refine((country) => country.trim() !== '', {
     message: 'Country is required',
-  }),
-  news_letter: z.boolean()
+  }).optional(),
+  // the following field is a phone number, can only be numbers but can have a + at the beginning, have - / and . and is optional
+  phone_number: z.string().refine((phone_number) => /^(\+)?(\d|\-|\.)*$/.test(phone_number), {
+    message: 'Invalid phone number',
+  }).optional(),
+  news_letter: z.boolean().optional(),
+  image: z.string().nullable().optional()
+}).refine((data) => data.password === data.password2, {
+  message: 'Passwords must match',
 });
 
 
-module.exports = { bookSchema, userSchema };
+module.exports = { bookSchema, userSchema, userUpdateScheme };
