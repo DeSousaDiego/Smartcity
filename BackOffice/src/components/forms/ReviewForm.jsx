@@ -3,77 +3,92 @@ import '../../stylesheet/backoffice.css';
 import { useNavigate } from 'react-router-dom';
 import { useParams } from 'react-router-dom';
 import { useEffect } from 'react';
-import { sendForm as APISendForm } from '../../API/reviews';
-import { updateReview as APIUpdateReview } from '../../API/reviews';
-import { getReviewById } from '../../API/reviews';
+import { sendForm as APISendForm } from '../../API/review';
+import { updateReview as APIUpdateReview } from '../../API/review';
+import { getReviewById } from '../../API/review';
+import { getUserById } from '../../API/user';
+import { getBookById } from '../../API/book';
+import { setReview, updateReview } from '../../store/slice/reviewSlice';
+import { useDispatch, useSelector } from 'react-redux';
 
 function ReviewForm(){
     const params = useParams();
-    const[user, setUser] = useState('');
-    const[book, setBook] = useState('');
+    const[bookISBN, setBookISBN] = useState('');
     const[title, setTitle] = useState('');
     const[content, setContent] = useState('');
     const[rating, setRating] = useState('');
+    const dispatch = useDispatch();
     const navigate = useNavigate();
+    const newID = useSelector(state => state.reviews.reviews.length + 1);
+    const token = useSelector(state => state.auth.token);
 
 
     useEffect(() => {
         if(params.type === 'modify'){
-            getReviewById(parseInt(params.id))
+            console.log('params.id', params.id);
+            getReviewById(parseInt(params.id), token)
             .then((response) => {
-                setUser(response.user_id);
-                setBook(response.book_id);
+                setBookISBN(response.book_id);
                 setTitle(response.title);
                 setContent(response.content);
-                setLikesCounter(response.likes_counter);
-                setDislikesCounter(response.dislikes_counter);
                 setRating(response.rating); 
             }).catch((error) => {
                 console.log(error);
             });
         }
         else if(params.type === 'add'){
-            setBook('');
+            setBookISBN('');
             setTitle('');
             setContent('');
             setRating('');
         }
-    }, [params.type]);
+    }, [params.type, params.id]);
 
 
     async function sendForm(event){
         const formData = new FormData();
-        event.preventDefault();
+        event.preventDefault();                
+        const book = await getBookById(bookISBN, token);
+        formData.append('title', title);
+        formData.append('content', content);
+        formData.append('rating', rating);
+
+        const reviewData = [
+            {type: 'text', content: newID},
+            {type: 'text', content: rating},
+            {type: 'text', content: title},
+            {type: 'text', content: content},
+            {type: 'text', content: 0},
+            {type: 'commentsButton', content: 'Comments'},
+            {type: 'text', content: book.title},
+            {type: 'modifyButton', content: 'Modify'},
+            {type: 'deleteButton', content: 'Delete'}
+        ];
         switch (params.type) {
             case 'add':
-                formData.append('book_id', book);
-                formData.append('title', title);
-                formData.append('content', content);
-                formData.append('rating', rating);
+                formData.append('user_id', parseInt(params.id));
+                formData.append('book_id', bookISBN);
+
                 try {
-                    await APISendForm(formData);
+                    await APISendForm(formData, token);
                     console.log('OK');
                     alert('The review has been added to the database');
-                    navigate('/reviews/add');
+                    dispatch(setReview(reviewData));
                 } catch (e) {
                     console.log(e);
                 }
                 break;
             case 'modify':
-                formData.append('title', title);
-                formData.append('content', content);
-                formData.append('rating', rating);
                 try {
-                    await APIUpdateReview(params.id, formData);
+                    await APIUpdateReview(params.id, formData, token);
                     console.log('OK');
                     alert('The review has been modified');
-                    navigate('/reviews/add');
+                    dispatch(updateReview(params.id));
                 } catch (e) {
                     console.log(e);
                 }
                 break;             
         }
-        navigate(0);
     }
 
     return(
@@ -81,14 +96,16 @@ function ReviewForm(){
         <>          
             <form onSubmit={sendForm}>
 
-                    <label className="field">Book:
+                    {(params.type === 'add' ? 
+                    <label className="field">Book ISBN:
                         <br/>
                         <input
                         type="text"
-                        name="book"
+                        name="bookISBN"
                         placeholder='Insert...'
-                        value={book} onChange={e => setBook(e.target.value)} />
-                    </label>
+                        value={bookISBN} onChange={e => setBookISBN(e.target.value)} 
+                        />
+                    </label> : <></>)}
                     <label className="field">Title:
                         <br/>
                         <input
@@ -113,6 +130,7 @@ function ReviewForm(){
                         placeholder='Insert...'
                         value={rating} onChange={e => setRating(e.target.value)} />
                     </label> 
+                    {params.type === 'modify' ? <button onClick={() => navigate('/reviews/add')}>Cancel</button> : null}
                     <input type="submit" value="Submit" />
             </form>
         </>

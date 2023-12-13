@@ -1,7 +1,9 @@
 import React from 'react';
 import { Breadcrumb, Layout, theme } from 'antd';
 import Menu from './Menu';
+import LogoutButton from './LogoutButton';
 import '../stylesheet/backoffice.css';
+import DataTable from './DataTable';
 
 const { Header, Content, Footer } = Layout;
 const BackOfficeLayout = ({content}) => {
@@ -22,6 +24,7 @@ const BackOfficeLayout = ({content}) => {
         }}
       >
         <Menu/>
+        <LogoutButton/>
       </Header>
 
       <Content
@@ -43,9 +46,10 @@ const BackOfficeLayout = ({content}) => {
             background: colorBgContainer,
           }}
         >
+        <DataTable/>
           {content}
         </div>
-      </Content>
+        </Content>
       <Footer
         style={{
           textAlign: 'center',

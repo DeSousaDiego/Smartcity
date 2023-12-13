@@ -1,11 +1,13 @@
 import '../../stylesheet/backoffice.css';
 import {sendForm as APISendForm } from '../../API/user';
-import { updateUser, getUserById } from '../../API/user';
+import { updateUser as APIUpdateUser, getUserById } from '../../API/user';
 import {useParams, useNavigate} from 'react-router-dom';
 import { useEffect, useState, useRef } from 'react';
 import { useSelector } from 'react-redux';
 import countriesList from '../Countries';
 import { userSchema } from './ValidationSchemas';
+import { setUser, updateUser } from '../../store/slice/userSlice';
+import { useDispatch } from 'react-redux';
 
 
 
@@ -19,10 +21,12 @@ function UserForm(){
     const[role, setRole] = useState('user');
     const[phone, setPhone] = useState('');
     const[newsletter, setNewsletter] = useState(false);
-    const avatar = useRef(null);
+    const[image, setImage] = useState('');
+    const newId = useSelector(state => state.users.users.length + 1);
 
     const navigate = useNavigate();
-    const token = useSelector(state => state.token);
+    const dispatch = useDispatch();
+    const token = useSelector(state => state.auth.token);
 
     useEffect(() => {
         if(params.type === 'modify'){
@@ -36,6 +40,7 @@ function UserForm(){
                 setEmail(response.email_address);
                 setRole(response.role);
                 setPhone(response.phone_number);
+                setImage('');
                 setNewsletter(response.news_letter);
             })
             .catch((error) => {
@@ -49,23 +54,40 @@ function UserForm(){
             setCountry('');
             setEmail('');
             setPhone('');
+            setImage('');
             setNewsletter(false);
         }
-    }, [params.type]);
+    }, [params.type, params.id]);
 
 // write the handleSubmit function here
 async function sendForm (event) {
     const formData = new FormData();
     event.preventDefault();
-    formData.append('id', params.id);
     formData.append('username', username);
     formData.append('email_address', email);
     formData.append('password', password);
+    formData.append('password2', password2);
     formData.append('role', role);
     formData.append('country', country);
     formData.append('phone_number', phone);
     formData.append('news_letter', newsletter);
-    formData.append('profile_picture_path', avatar.current);
+    formData.append('image', image);
+
+    const userData = [
+        {type: 'text', content: newId},
+        {type: 'text', content: username},
+        {type: 'text', content: email},
+        {type: 'text', content: password},
+        {type: 'text', content: role},
+        {type: 'text', content: country},
+        {type: 'text', content: phone},
+        {type: 'boolean', content: newsletter},
+        {type: 'modifyButton', content: 'Modify'},
+        {type: 'deleteButton', content: 'Delete'}
+    ];
+
+    console.log("FormData: ", formData);
+
     if(params.type === 'add'){
             // formData.append('avatar', avatar.current);
             try {
@@ -73,15 +95,17 @@ async function sendForm (event) {
                     username,
                     email_address: email,
                     password,
+                    password2,
                     role,
                     country,
                     phone_number: phone,
                     news_letter: newsletter
                 });
                 await APISendForm(formData, token);
+
                 //write the alert here
                 alert('The user has been added to the database');
-                navigate(0);
+                dispatch(setUser(userData));
             } catch (e) {
                 console.log(e);
             }
@@ -89,10 +113,11 @@ async function sendForm (event) {
 
             // formData.append('avatar', avatar.current);
             try {
-                await updateUser(formData, token);
+                formData.append('id', params.id);
+                await APIUpdateUser(formData, token);
                 //write the alert here
                 alert('The user has been modified in the database');
-                navigate('/users/add');
+                dispatch(updateUser(params.id));
             } catch (e) {
                 console.log(e);
             }
@@ -167,14 +192,13 @@ async function sendForm (event) {
                         placeholder='Insert...'
                         value={phone} onChange={e => setPhone(e.target.value)} />
                     </label>
-                    <label className="field">Avatar:
+                    <label>Image:</label>
                         <br/>
-                        <input 
-                        type={'file'}
-                        accept={'image/*'}
-                        onChange={(e) => avatar.current = e.target.files[0]}
-                        ref={avatar} />
-                    </label>
+                        <input
+                            type={"file"}
+                            accept={"image/*"}
+                            onChange={(e) =>setImage(e.target.files[0])}
+                        />
                     <label className="field"> 
                         <input 
                         type="checkbox" 
@@ -182,6 +206,7 @@ async function sendForm (event) {
                         checked={newsletter} onChange={e => setNewsletter(e.target.checked)} />
                         Subscribe to Newsletter: 
                     </label>
+                    {params.type === 'modify' ? <button onClick={() => navigate('/users/add')}>Cancel</button> : null}
                     <input type="submit" value="Submit" />
             </form>
                 

@@ -1,13 +1,12 @@
 import axios from "axios";
 const bookURL = "http://localhost:3001/books";
 
-const sendForm = async (formData,token) => {
+const sendForm = async (formData) => {
 
   try {
     const response = await axios.post(bookURL, formData, {
       headers: {
-        'Content-Type': 'multipart/form-data',
-        'Authorization' : 'Bearer ' + token
+        'Content-Type': 'application/json'
       }
     });
 
@@ -21,51 +20,35 @@ const sendForm = async (formData,token) => {
 
 
 
-const getAllBooks = async (token) => {
+const getAllBooks = async () => {
 
-    const response = await axios.get(bookURL, {
-      headers: {
-        'Authorization' : 'Bearer ' + token
-      }
-    });
+    const response = await axios.get(bookURL);
     return response.data;
 };
 
 
-const getBookById = async (id, token) => {
-  console.log("id: ", id);
-  console.log("token: ", token);
-  const response = await axios.get(`${bookURL}/${id}`,{
-    headers: {
-      'Authorization' : 'Bearer ' + token
-    }
-  }
-  );
+const getBookById = async (id) => {
+
+  const response = await axios.get(`${bookURL}/${id}`);
   console.log("${userURL}/${id}", `${bookURL}/${id}`);
   console.log("response: ", response);
   return response.data;
 }
-const deleteBook = async (id,token) => {
+const deleteBook = async (id) => {
 
     try {
-      const response = await axios.delete(`${bookURL}/${id}`, {
-        headers: {
-          'Authorization' : 'Bearer ' + token
-        }
-      });
+      const response = await axios.delete(`${bookURL}/${id}`);
       return response.data;
-
   } catch (err) {
       console.error(err);
   }
 };
 
-const updateBook = async (formData,token) => {
+const updateBook = async (formData) => {
 
     return await axios.patch(bookURL, formData, {
         headers: {
-          'Content-Type': 'multipart/form-data',
-          'Authorization': 'Bearer ' + token
+          'Content-Type': 'application/json'
         }
       })
       .then(response => {

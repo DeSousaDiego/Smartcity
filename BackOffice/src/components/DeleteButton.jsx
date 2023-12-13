@@ -4,11 +4,16 @@ import Popup from "reactjs-popup";
 import "reactjs-popup/dist/index.css";
 import "../stylesheet/backoffice.css";
 import { FaRegTrashAlt } from "react-icons/fa";
-import { deleteUser } from "../API/user";
-import { deleteBook } from "../API/book";
-import { deleteReview } from "../API/reviews";
+import { deleteUser as deleteUserAPI } from "../API/user";
+import { deleteBook as deleteBookAPI } from "../API/book";
+import { deleteReview as deleteReviewAPI } from "../API/review";
+import { deleteComment as deleteCommentAPI } from "../API/comment";
 import { useParams, useNavigate} from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import {  deleteUser } from "../store/slice/userSlice";
+import { deleteBook } from "../store/slice/bookSlice";
+import { deleteReview } from "../store/slice/reviewSlice";
+import { deleteComment } from "../store/slice/commentSlice";
 
 //write a button that delete a line from a table, that recieve the name of the table and the id of the line
  
@@ -18,7 +23,8 @@ function DeleteButton({id}) {
   const [showAlert, setShowAlert] = useState(false);
   const params = useParams();
   const navigate = useNavigate();
-  const token = useSelector((state) => state.token);
+  const dispatch = useDispatch();
+  const token = useSelector((state) => state.auth.token);
   
 
   let deleteData = null;
@@ -26,13 +32,9 @@ function DeleteButton({id}) {
     case "users":
       deleteData = async () => {
         try { 
-          // delete the user from the database but make sure it the delete is done before reloading the page
-          await (deleteUser(id, token));
-          // once the user is deleted, reload the page to see the changes
+          await (deleteUserAPI(id, token));
           alert("Utilisateur supprimé avec succès");
-          return response;
-          
-          navigate(0);
+          dispatch(deleteUser(id));
         } catch (e) {
           console.log(e);
         }
@@ -41,10 +43,9 @@ function DeleteButton({id}) {
       case "books" :
         deleteData = async() =>{
           try {
-            await deleteBook(id,token);
-            // once the user is deleted, reload the page to see the changes
+            await deleteBookAPI(id,token);
             alert("Livre supprimé avec succès");
-            return response;
+            dispatch(deleteBook(id));
           } catch (e) {
             console.log(e);
           }
@@ -53,14 +54,24 @@ function DeleteButton({id}) {
       case "reviews":
         deleteData = async (id) => {  
           try {
-            await deleteReview(id);
-            return response;
-            // once the user is deleted, reload the page to see the changes
+            await deleteReviewAPI(id);
+            alert("Commentaire supprimé avec succès");
+            dispatch(deleteReview(id));
           } catch (e) {
             console.log(e);
           }
         };
       break;
+      case "comments":
+        deleteData = async (id) => {  
+          try {
+            await deleteCommentAPI(id);
+            alert("Commentaire supprimé avec succès");
+            dispatch(deleteComment(id));
+          } catch (e) {
+            console.log(e);
+          }
+        };
       }
   
   const handleClick = () => {

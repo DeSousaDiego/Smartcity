@@ -61,7 +61,7 @@ const updateUser = async (formData, token) => {
     //return a user
     return await axios.patch(userURL, formData, {
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'multipart/form-data',
           'Authorization': 'Bearer ' + token
         }
       })
@@ -88,6 +88,25 @@ const login = async (formData) => {
 
 }
 
+const logout = async (token) => {
+  console.log("token API B: ", token);
+  return await axios.get(`${userURL}/logout`,
+  {
+    headers: {
+      'Authorization': 'Bearer ' + token
+    }
+  })
+  .then(response => {
+    console.log("response: ", response);
+    return response;
+  })
+  .catch(error => {
+    console.error(error);
+    return error;
+  });
+}
+
+
 const countriesList = [
   'Afghanistan', 'Albania', 'Algeria', 'Andorra', 'Angola', 'Antigua and Barbuda', 'Argentina', 'Armenia', 'Australia',
   'Austria', 'Azerbaijan', 'Bahamas', 'Bahrain', 'Bangladesh', 'Barbados', 'Belarus', 'Belgium', 'Belize', 'Benin',
@@ -111,4 +130,4 @@ const countriesList = [
   'Uzbekistan', 'Vanuatu', 'Venezuela', 'Vietnam', 'Yemen', 'Zambia', 'Zimbabwe'
 ];
 
-export {sendForm, getAllUsers, getUserById, deleteUser, updateUser, login, countriesList};
+export {sendForm, getAllUsers, getUserById, deleteUser, updateUser, login, logout, countriesList};
