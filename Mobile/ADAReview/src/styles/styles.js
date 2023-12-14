@@ -213,6 +213,10 @@ export const searchStyles = StyleSheet.create({
     backgroundColor :'#354F52', 
     borderTopWidth :'0'
   },
+  topContainer : {
+    backgroundColor: '#F0F0EC',
+    flex : 1
+  },
   input :{
     backgroundColor: "white",
     paddingLeft: 10,
