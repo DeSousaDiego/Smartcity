@@ -4,7 +4,7 @@ const roleModele = require('../modele/roleDB');
 const actorModele = require('../modele/actorDB');
 const reviewModele = require('../modele/reviewDB');
 const {bookSchema} = require('../schema/ValidationSchemas.js');
-const {saveImage} = require('../modele/imageManager');
+const {saveImage, getImage} = require('../modele/imageManager');
 const imageSize = require('image-size');
 const uuid = require('uuid');
 const fs = require('fs');
@@ -13,6 +13,7 @@ const destFolderImages = "./upload/images";
 module.exports.getBookByID = async (req, res) => {
     if(req.session !== undefined){
         const bookISBN = req.params.id;
+        console.log("bookISBN: ", bookISBN);
         const client = await pool.connect();
         try {
             await client.query('BEGIN;');
@@ -20,8 +21,18 @@ module.exports.getBookByID = async (req, res) => {
             const {rows} = await bookModele.getBookByID(bookISBN, client);
             if (rows.length > 0) {
                 const book = rows[0];
-                let nbRatings = 0;
-                let sumRatings = 0;
+                nbRatings = 0;
+                sumRatings = 0;
+                book.rating = 0;
+
+                if(book.img_path){
+                    const {rows: images} = await getImage(book.img_path, destFolderImages);
+                    if(images.length > 0){
+                        console.log("images: ", images);
+                        book.image = images[0];
+                    }
+                }
+
                 // Calcul de la note du livre sur base des notes des review
                 const {rows : reviews} = await reviewModele.getBookRatings(book.isbn, client);
                 if(reviews.length > 0){
@@ -34,6 +45,8 @@ module.exports.getBookByID = async (req, res) => {
                 }
 
                 const { rows: roles } = await roleModele.getRolesByBookID(book.isbn, client);
+                book.author = "";
+                book.illustrator = "";
                 for (let role of roles) {
                     if(role.role_name === "author"){
                         book.author = role.actor_name;
@@ -73,7 +86,7 @@ module.exports.getBooks = async (req, res) => {
     
             const { rows: books } = await bookModele.getBooks(client);
             if (books.length > 0) {
-                for (const book of books) {           
+                for (const book of books) {
                     nbRatings = 0;
                     sumRatings = 0;
                     book.rating = 0;
@@ -81,12 +94,11 @@ module.exports.getBooks = async (req, res) => {
                     const {rows : reviews} = await reviewModele.getBookRatings(book.isbn, client);
                     if(reviews.length > 0){
 
-                        for(let review of reviews){
+                        for(review of reviews){
                             nbRatings += 1;
                             sumRatings += review.rating;
                         }
                         book.rating = Math.round((sumRatings / nbRatings) * 10) / 10;
-                        book.nbRatings = nbRatings;
                     }
 
                     const { rows: roles } = await roleModele.getRolesByBookID(book.isbn, client);
@@ -131,6 +143,7 @@ module.exports.createBook = async (req, res) => {
     let imageName = null;
     // Image facultative donc vérifier si elle existe
     if (image) {
+        console.log("OK IMAGE");
         // Vérifier si les dimensions de l'image sont valides en utilisant image-size
         const dimensions = imageSize(image[0].buffer);
         if (!dimensions.width || !dimensions.height) {
@@ -140,7 +153,7 @@ module.exports.createBook = async (req, res) => {
     }
 
     try {
-
+        console.log("OK Try");
         // Valider les champs du formulaire
         const newData = bookSchema.parse({
             isbn: toInsert.isbn,
@@ -153,14 +166,16 @@ module.exports.createBook = async (req, res) => {
             publishingHouse: toInsert.publishing_house,
             illustrator: toInsert.illustrator === "" ? null : toInsert.illustrator,
             imgPath: imageName,
-            author: toInsert.author,
+            author: toInsert.author === "" ? null : toInsert.author,
         });
+        console.log("OK Vérification champs");
+        console.log("New data : ", newData);
 
         //Transformer l'année en int pour l'insérer dans la BD
         newData.releasedYear = parseInt(newData.releasedYear);
 
         // Créer un tableau d'acteurs
-        const actors = [{ type: "author", name: newData.author }, { type: "illustrator", name: newData.illustrator }];
+        const actors = [{ type: "author", name:newData.author }, { type: "illustrator", name: newData.illustrator}];
         const client = await pool.connect();
         try {
             await client.query('BEGIN;');
@@ -232,6 +247,7 @@ module.exports.updateBook = async (req, res) => {
     const bookISBN = toUpdate.isbn;
     const image = req.files?.image || null;
     let imageName = null;
+    console.log("bookISBN: ", bookISBN);
     if(bookISBN != undefined){
 
         // Handle image if provided
@@ -242,6 +258,7 @@ module.exports.updateBook = async (req, res) => {
                 return res.status(400).json("Le fichier n\'est pas une image valide.");
             }
             imageName = uuid.v4();
+            console.log("imageName: ", imageName);
         }
 
         try {
@@ -259,6 +276,7 @@ module.exports.updateBook = async (req, res) => {
                 imgPath: imageName,
                 author: toUpdate.author,
             });
+            console.log("updatedData: ", updatedData);
 
             updatedData.releasedYear = parseInt(updatedData.releasedYear);
 
@@ -271,13 +289,18 @@ module.exports.updateBook = async (req, res) => {
                 let fileNameToDelete = null;
                 let filePath = null;
                 const {rows} = await bookModele.getBookByID(bookISBN, client);
+                console.log("rows book api: ", rows);
                 if(rows[0].img_path){
                     fileNameToDelete = rows[0].img_path
-                    filePath = `${destFolderImages}/${fileNameToDelete}`;
+                    filePath = `${destFolderImages}/${fileNameToDelete}.jpeg`;
+                    console.log("filePath: ", filePath);
+                    
                     // Vérifier si le fichier existe avant de le supprimer
                     if (fs.existsSync(filePath)) {
+                        console.log("OK FILE EXISTS");
                         // Supprimer le fichier
                         fs.unlinkSync(filePath);
+                        console.log(`Le fichier ${fileNameToDelete} a été supprimé.`);
                     }
                 }
                 await client.query('BEGIN;');
@@ -294,8 +317,10 @@ module.exports.updateBook = async (req, res) => {
                     updatedData.imgPath,
                     client
                 );
+                console.log("OK UPDATE BOOK");
                 // Delete roles linked to the book in the DB
                 await roleModele.deleteRole(bookISBN, client);
+                console.log("OK DELETE ROLE");
 
                 // Reassign roles based on the new data
                 for (let actor of actors) {
@@ -310,12 +335,19 @@ module.exports.updateBook = async (req, res) => {
                         await roleModele.insertRole(bookISBN, actorID, actor.type, client);
                     }
                 }
+                console.log("OK INSERT ROLE");
 
                 await client.query("COMMIT");
                 // Save the new image only if the book update is successful and an image is provided
                 if (image) {
                     try {
+                        console.log("OK SAVE IMAGE");
+                        console.log("image[0] ", image[0]);
+                        console.log("imageName ", imageName);
+                        console.log("destFolderImages ", destFolderImages);
                         await saveImage(image[0].buffer, imageName, destFolderImages);
+                        console.log("OK SAVE IMAGE 2");
+
                     } catch (error) {
                         console.error(error);
                         res.status(500).json("Erreur lors de la mise à jour de l'image");
@@ -354,16 +386,19 @@ module.exports.deleteBook = async (req,res) =>{
             const {rows} = await bookModele.getBookByID(bookISBN, client);
             if(rows[0].img_path){
                 fileNameToDelete = rows[0].img_path
-                filePath = `${destFolderImages}/${fileNameToDelete}`;
+                filePath = `${destFolderImages}/${fileNameToDelete}.jpeg`;
                 // Vérifier si le fichier existe avant de le supprimer
                 if (fs.existsSync(filePath)) {
                     // Supprimer le fichier
                     fs.unlinkSync(filePath);
+                    console.log(`Le fichier ${fileNameToDelete} a été supprimé.`);
                 }
             }
             await client.query("BEGIN;");
             //Supprimer les roles liés au livre
             await roleModele.deleteRole(bookISBN,client);
+            // Supprimer les reviews liées au livre
+            await reviewModele.deleteBookReviews(bookISBN, client);
             //Supprimer le livre
             await bookModele.deleteBook(bookISBN, client);
             await client.query("COMMIT");
