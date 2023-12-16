@@ -12,7 +12,6 @@ module.exports.createUser = async (client, username, password, email_address, ro
     );
 }
 
-
 module.exports.updateUser = async (client, id, username, emailAddress, password, role, country, phoneNumber, newsLetter) => {
 
     const params = [];
@@ -75,12 +74,7 @@ module.exports.deleteUser = async (client, id) => {
 }
 
 module.exports.getAllUsers = async (client) => {
-    return await client.query(`
-        SELECT a.id, a.username, a.email_address, a.role, a.country, a.phone_number, a.news_letter, a.profile_picture_path AS img_path, COUNT(r.id) AS nb_ratings
-        FROM account a
-        LEFT JOIN review r ON a.id = r.user_id
-        GROUP BY a.id;
-    `);
+    return await client.query(`SELECT * FROM account`);
 }
 
 module.exports.login = async (client, username) => 
