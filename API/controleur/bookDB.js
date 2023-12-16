@@ -28,7 +28,6 @@ module.exports.getBookByID = async (req, res) => {
                 if(book.img_path){
                     const {rows: images} = await getImage(book.img_path, destFolderImages);
                     if(images.length > 0){
-                        console.log("images: ", images);
                         book.image = images[0];
                     }
                 }
@@ -42,6 +41,7 @@ module.exports.getBookByID = async (req, res) => {
                         sumRatings += review.rating;
                     }
                     book.rating = Math.round((sumRatings / nbRatings) * 10) / 10;
+                    book.nbRatings = nbRatings;
                 }
 
                 const { rows: roles } = await roleModele.getRolesByBookID(book.isbn, client);
@@ -99,6 +99,7 @@ module.exports.getBooks = async (req, res) => {
                             sumRatings += review.rating;
                         }
                         book.rating = Math.round((sumRatings / nbRatings) * 10) / 10;
+                        book.nbRatings = nbRatings;
                     }
 
                     const { rows: roles } = await roleModele.getRolesByBookID(book.isbn, client);
@@ -153,7 +154,6 @@ module.exports.createBook = async (req, res) => {
     }
 
     try {
-        console.log("OK Try");
         // Valider les champs du formulaire
         const newData = bookSchema.parse({
             isbn: toInsert.isbn,
@@ -168,8 +168,6 @@ module.exports.createBook = async (req, res) => {
             imgPath: imageName,
             author: toInsert.author === "" ? null : toInsert.author,
         });
-        console.log("OK Vérification champs");
-        console.log("New data : ", newData);
 
         //Transformer l'année en int pour l'insérer dans la BD
         newData.releasedYear = parseInt(newData.releasedYear);
@@ -247,7 +245,6 @@ module.exports.updateBook = async (req, res) => {
     const bookISBN = toUpdate.isbn;
     const image = req.files?.image || null;
     let imageName = null;
-    console.log("bookISBN: ", bookISBN);
     if(bookISBN != undefined){
 
         // Handle image if provided
@@ -258,7 +255,6 @@ module.exports.updateBook = async (req, res) => {
                 return res.status(400).json("Le fichier n\'est pas une image valide.");
             }
             imageName = uuid.v4();
-            console.log("imageName: ", imageName);
         }
 
         try {
@@ -276,7 +272,6 @@ module.exports.updateBook = async (req, res) => {
                 imgPath: imageName,
                 author: toUpdate.author,
             });
-            console.log("updatedData: ", updatedData);
 
             updatedData.releasedYear = parseInt(updatedData.releasedYear);
 
@@ -289,18 +284,15 @@ module.exports.updateBook = async (req, res) => {
                 let fileNameToDelete = null;
                 let filePath = null;
                 const {rows} = await bookModele.getBookByID(bookISBN, client);
-                console.log("rows book api: ", rows);
                 if(rows[0].img_path){
                     fileNameToDelete = rows[0].img_path
                     filePath = `${destFolderImages}/${fileNameToDelete}.jpeg`;
-                    console.log("filePath: ", filePath);
                     
                     // Vérifier si le fichier existe avant de le supprimer
                     if (fs.existsSync(filePath)) {
                         console.log("OK FILE EXISTS");
                         // Supprimer le fichier
                         fs.unlinkSync(filePath);
-                        console.log(`Le fichier ${fileNameToDelete} a été supprimé.`);
                     }
                 }
                 await client.query('BEGIN;');
@@ -317,10 +309,8 @@ module.exports.updateBook = async (req, res) => {
                     updatedData.imgPath,
                     client
                 );
-                console.log("OK UPDATE BOOK");
                 // Delete roles linked to the book in the DB
                 await roleModele.deleteRole(bookISBN, client);
-                console.log("OK DELETE ROLE");
 
                 // Reassign roles based on the new data
                 for (let actor of actors) {
@@ -335,18 +325,12 @@ module.exports.updateBook = async (req, res) => {
                         await roleModele.insertRole(bookISBN, actorID, actor.type, client);
                     }
                 }
-                console.log("OK INSERT ROLE");
 
                 await client.query("COMMIT");
                 // Save the new image only if the book update is successful and an image is provided
                 if (image) {
                     try {
-                        console.log("OK SAVE IMAGE");
-                        console.log("image[0] ", image[0]);
-                        console.log("imageName ", imageName);
-                        console.log("destFolderImages ", destFolderImages);
                         await saveImage(image[0].buffer, imageName, destFolderImages);
-                        console.log("OK SAVE IMAGE 2");
 
                     } catch (error) {
                         console.error(error);
