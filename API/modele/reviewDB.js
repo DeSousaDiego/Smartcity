@@ -2,7 +2,7 @@ module.exports.getReview = async (client, id) => {
     return await client.query("SELECT * FROM review WHERE id = $1", [id]);
 };
 
-module.exports.getAllReview = async (client) => {
+module.exports.getAllReviews = async (client) => {
     return await client.query(
     `SELECT r.id, r.date, r.title, r.content, r.rating, r.likes_counter, r.dislikes_counter, r.book_id, 
     r.user_id, a.username, a.profile_picture_path AS account_img_path, b.isbn,b.title AS book_name, b.img_path AS book_img_path
