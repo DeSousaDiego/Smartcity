@@ -2,8 +2,10 @@ module.exports.getReview = async (client, id) => {
     return await client.query("SELECT * FROM review WHERE id = $1", [id]);
 };
 
-module.exports.getAllReviews = async (client) => {
-    return await client.query(`SELECT r.id, r.date, r.title, r.content, r.rating, r.likes_counter, r.dislikes_counter, r.book_id, r.user_id, a.username, b.isbn, b.title as book_title
+module.exports.getAllReview = async (client) => {
+    return await client.query(
+    `SELECT r.id, r.date, r.title, r.content, r.rating, r.likes_counter, r.dislikes_counter, r.book_id, 
+    r.user_id, a.username, a.profile_picture_path AS account_img_path, b.isbn,b.title AS book_name, b.img_path AS book_img_path
     FROM review r 
     INNER JOIN account a ON r.user_id = a.id 
     INNER JOIN book b ON r.book_id = b.isbn 
