@@ -66,7 +66,7 @@ module.exports.getBookByID = async (req, res) => {
 }
 
 module.exports.getBooks = async (req, res) => {
-    if(req.session === undefined){
+    if(req.session !== undefined){
         const client = await pool.connect();
         try {
             await client.query('BEGIN;');
@@ -155,8 +155,6 @@ module.exports.createBook = async (req, res) => {
             imgPath: imageName,
             author: toInsert.author,
         });
-        console.log("OK Vérification champs");
-        console.log("New data : ", newData);
 
         //Transformer l'année en int pour l'insérer dans la BD
         newData.releasedYear = parseInt(newData.releasedYear);
@@ -280,7 +278,6 @@ module.exports.updateBook = async (req, res) => {
                     if (fs.existsSync(filePath)) {
                         // Supprimer le fichier
                         fs.unlinkSync(filePath);
-                        console.log(`Le fichier ${fileNameToDelete} a été supprimé.`);
                     }
                 }
                 await client.query('BEGIN;');
@@ -362,7 +359,6 @@ module.exports.deleteBook = async (req,res) =>{
                 if (fs.existsSync(filePath)) {
                     // Supprimer le fichier
                     fs.unlinkSync(filePath);
-                    console.log(`Le fichier ${fileNameToDelete} a été supprimé.`);
                 }
             }
             await client.query("BEGIN;");
