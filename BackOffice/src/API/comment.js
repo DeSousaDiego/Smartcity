@@ -1,5 +1,5 @@
 import axios from "axios";
-const commentURL = "http://localhost:3001/comments";
+const commentURL = "http://localhost:3001/comment";
 const versionNumber = '1.0.0';
 
 const sendForm = async (formData, token) => {  
