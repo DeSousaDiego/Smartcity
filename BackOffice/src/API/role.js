@@ -1,5 +1,5 @@
 import axios from "axios";
-const rolesURL = "http://localhost:3001/roles";
+const rolesURL = "http://localhost:3001/role";
 const versionNumber = "1.0.0";
 
 
