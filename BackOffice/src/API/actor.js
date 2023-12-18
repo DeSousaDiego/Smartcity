@@ -1,5 +1,5 @@
 import axios from "axios";
-const actorURL = "http://localhost:3001/actors";
+const actorURL = "http://localhost:3001/actor";
 const versionNumber = "1.0.0";
 
 
