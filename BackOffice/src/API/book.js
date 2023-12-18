@@ -1,5 +1,5 @@
 import axios from "axios";
-const bookURL = "http://localhost:3001/books";
+const bookURL = "http://localhost:3001/book";
 const versionNumber = "1.0.0";
 
 const sendForm = async (formData,token) => {
