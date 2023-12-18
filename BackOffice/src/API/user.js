@@ -1,5 +1,5 @@
 import axios from "axios";
-const userURL = "http://localhost:3001/users";
+const userURL = "http://localhost:3001/user";
 const versionNumber = "1.0.0";
 
 const sendForm = async (formData, token) => {
