@@ -1,5 +1,5 @@
 import axios from "axios";
-const reviewURL = "http://localhost:3001/reviews";
+const reviewURL = "http://localhost:3001/review";
 const versionNumber = "1.0.0";
 
 const sendForm = async (formData, token) => {
