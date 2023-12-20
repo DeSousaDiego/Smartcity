@@ -9,7 +9,12 @@ function ModifyButton({id}) {
   const navigate = useNavigate();
   const params = useParams();
   const handleClick = () => {
-    navigate(`/v1.0.0/${params.name}/modify/${id}`);
+    if(params.name === "comments"){
+      navigate(`/v1.0.0/${params.name}/modify/${params.id}/${id}`);
+    }
+    else{
+      navigate(`/v1.0.0/${params.name}/modify/${id}`);
+    }
   };
 
   return (

@@ -4,7 +4,7 @@ const versionNumber = "1.0.0";
 
 
 const getAllActors = async (token) => {
-
+    try{
     const response = await axios.get(actorURL, {
         headers: {
             'Authorization' : 'Bearer ' + token,
@@ -12,5 +12,9 @@ const getAllActors = async (token) => {
         }
     });
     return response.data;
+}
+catch(error){
+    throw error;
+}
 };
 export {getAllActors}

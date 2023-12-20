@@ -1,15 +1,11 @@
-import { useState } from 'react';
-import '../../stylesheet/backoffice.css'
-import { useNavigate } from 'react-router-dom';
-import Popup from 'reactjs-popup';
-import { useParams } from 'react-router-dom';
-import { useEffect } from 'react';
-import { useSelector } from "react-redux";
+import { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useSelector, useDispatch } from "react-redux";
 import { bookSchema } from './ValidationSchemas';
 import { sendForm as APISendForm, updateBook as APIUpdateBook, getBookById } from '../../API/book'
 import countriesList from '../Countries';
 import { setBook, updateBook } from '../../store/slice/bookSlice';
-import { useDispatch } from 'react-redux';
+import { errorHandling } from '../../error/errorHandling';
 
 function BookForm(){
     const params = useParams();
@@ -24,6 +20,7 @@ function BookForm(){
     const[summary, setSummary] = useState('');
     const[illustrator, setIllustrator] = useState('');
     const[image, setImage] = useState(null);
+    let errorMsg = "";
     const token = useSelector(state => state.auth.token);
     const dispatch = useDispatch();
     const navigate = useNavigate();
@@ -32,17 +29,13 @@ function BookForm(){
     useEffect(() => {
         if(params.type === 'modify'){
             
-            console.log('params.id', params.id);
-            console.log('token', token);
-            
                 getBookById(params.id, token)
                 .then((response) => {
-                    console.log("response: ", response);
                     setTitle(response.title);
                     setAuthor(response.author);
                     setYear(response.released_year.toString());
                     setGenre(response.genre);
-                    setCountry(response.country || '');
+                    setCountry(response.country);
                     setPages(response.pages);
                     setEditor(response.publishing_house);
                     setIsbn(response.isbn);
@@ -51,7 +44,8 @@ function BookForm(){
                     setImage(response.image);
                 })
                 .catch((error) => {
-                    console.log("error: ", error);
+                    errorMsg = errorHandling(error);
+                    alert(errorMsg);
                 });
             }
             else if(params.type === 'add')
@@ -74,127 +68,110 @@ function BookForm(){
 // write the handleSubmit function here
 async function sendForm (event) {
     const formData = new FormData();
-    console.log("sendForm");
     event.preventDefault();
-      // Validate form data
-  try {
-    bookSchema.parse({
-      title,
-      author,
-      year,
-      genre,
-      country,
-      pages: parseInt(pages),  // Parse pages as an integer
-      editor,
-      isbn,
-      summary,
-      illustrator,
-      image,
-    });
-    console.log("send form 2");
-    formData.append('isbn', isbn);
-    formData.append('title', title);
-    formData.append('author', author);
-    formData.append('released_year', year);
-    formData.append('genre', genre);
-    formData.append('country', country);
-    formData.append('pages', pages);
-    formData.append('description', summary);
-    formData.append('illustrator', illustrator);
-    formData.append('publishing_house', editor);
-    formData.append('image', image);
-    console.log("formData: ", formData);
-    console.log("send form 3");
-    console.log("params.type: ", params.type);
-    const bookData = [
-        {type: 'text', content:isbn},
-        {type: 'text', content: title},
-        {type: 'text', content: summary},
-        {type: 'text', content: country},
-        {type: 'text', content: genre},
-        {type: 'text', content: year},
-        {type: 'text', content: pages},
-        {type: 'text', content: editor},
-        {type: 'text', content: image},
-        {type: 'modifyButton', content: 'Modify'},
-        {type: 'deleteButton', content: 'Delete'}
-    ]
-
-        if(params.type === 'add'){
-
-            console.log("send form 4");
-            try {
-                console.log("send form 5");
-                await APISendForm(formData, token);
-                alert('The book has been added to the database');
-                dispatch(setBook(bookData));
-            } catch (error) {
-                // Si une erreur se produit, vous pouvez traiter l'erreur ici
-                console.error("Error adding book:", error);
     
-                // Affichez une alerte ou effectuez toute autre action en cas d'erreur
-                alert('Failed to add the book. Please check your input and try again.');
+    // Validate form data
+    try {
+        bookSchema.parse({
+        title,
+        author,
+        year,
+        genre,
+        country,
+        pages: parseInt(pages),  // Parse pages as an integer
+        editor,
+        isbn,
+        summary,
+        illustrator,
+        image,
+        });
+        formData.append('isbn', isbn);
+        formData.append('title', title);
+        formData.append('author', author);
+        formData.append('released_year', year);
+        formData.append('genre', genre);
+        formData.append('country', country);
+        formData.append('pages', pages);
+        formData.append('description', summary);
+        formData.append('illustrator', illustrator);
+        formData.append('publishing_house', editor);
+        formData.append('image', image);
+        const bookData = [
+            {type: 'text', content: isbn},
+            {type: 'text', content: title},
+            {type: 'text', content: summary},
+            {type: 'text', content: country},
+            {type: 'text', content: genre},
+            {type: 'text', content: year},
+            {type: 'text', content: pages},
+            {type: 'text', content: editor},
+        ]
+
+            if(params.type === 'add'){
+
+                try {
+                    await APISendForm(formData, token);
+                    alert('The book has been added to the database');
+                    //const book = await getBookById(isbn, token);
+                    
+                    // bookData.push({})
+                    dispatch(setBook());
+                } catch (error) {
+                    errorMsg = errorHandling(error);
+                    alert(errorMsg);
+                }
+            }
+            else if(params.type === 'modify'){
+                // formData.append('avatar', avatar.current);
+                try {
+                    await APIUpdateBook(formData,token);
+                    //write the alert here
+                    alert('The book has been modified in the database');
+                    dispatch(updateBook(bookData));
+                } catch (error) {
+                    errorMsg = errorHandling(error);
+                    alert(errorMsg);
+                }
             }
         }
-        else if(params.type === 'modify'){
-            // formData.append('avatar', avatar.current);
-            try {
-                console.log("token update", token);
-                await APIUpdateBook(formData,token);
-                //write the alert here
-                alert('The book has been modified in the database');
-                dispatch(updateBook(bookData));
-            } catch (e) {
-                console.log(e);
-            }
+        catch (error) {
+            const validationErrors = error.errors.map((fieldError) => ({
+                fieldName: fieldError.path.join('.'),
+                error: fieldError.message,
+            }));
+        
+            errorMsg = validationErrors
+                .map(({ fieldName, error }) => `${fieldName}: ${error}`)
+                .join('\n');
+            
+            alert("Champs de formulaire incorrects : \n", errorMsg);
         }
     }
-    catch (error) {
-        // If validation fails, handle the error
-        if (error && error.errors) {
-          const validationErrors = error.errors.map((fieldError) => ({
-            fieldName: fieldError.path.join('.'),
-            error: fieldError.message,
-          }));
-      
-          const errorMessage = validationErrors
-            .map(({ fieldName, error }) => `${fieldName}: ${error}`)
-            .join('\n');
-      
-          console.error('Validation error:', validationErrors);
-          alert(`Form submit failed:\n${errorMessage}`);
-        } else {
-          // Handle the case where error or error.errors is undefined or null
-          console.error('Unexpected validation error:', error);
-          alert('Please, fill in all the mandatory fields.');
-        }
-      }
-}
 
     return(
         //write the form here
         <>          
             <form onSubmit={sendForm}>
-                    <label className="field">Title:
+                    <label className="field">Titre:
                         <br/>
                         <input
                         type="text"
                         name="title"
                         required
-                        placeholder='Insert...'
+                        placeholder='Insérer...'
                         value={title} onChange={e => setTitle(e.target.value)} />
                     </label>
-                    <label className="field">Editor:
+                    <label className="field">Maison d'édition:
                         <br/>
                         <input
                         type="text"
                         name="editor"
                         required
-                        placeholder='Insert...'
+                        placeholder='Insérer...'
                         value={editor} onChange={e => setEditor(e.target.value)} />
                     </label> 
 
-                    <label className="countryField">Country:
+                    <label className="countryField">Pays:
                         <br/>
                         <select 
                             name="country" 
@@ -217,17 +194,17 @@ async function sendForm (event) {
                         <input
                         type="text"
                         name="isbn"
-                        placeholder='Insert...'
+                        placeholder='Insérer...'
                         value={isbn} onChange={e => setIsbn(e.target.value)} 
                         />
                     </label> : <></>)}
-                    <label className="field">Author:
+                    <label className="field">Auteur:
                         <br/>
                         <input
                         type="text"
                         name="author"
                         required
-                        placeholder='Insert...'
+                        placeholder='Insérer...'
                         value={author} onChange={e => setAuthor(e.target.value)} />
                     </label>
                     <label className="field">Year:
@@ -236,7 +213,7 @@ async function sendForm (event) {
                         type="text"
                         name="year"
                         required
-                        placeholder='Insert...'
+                        placeholder='Insérer...'
                         value={year} onChange={e => setYear(e.target.value)} />
                     </label>
                     <label className="field">Pages:
@@ -245,7 +222,7 @@ async function sendForm (event) {
                         type="text"
                         name="pages"
                         required
-                        placeholder='Insert...'
+                        placeholder='Insérer...'
                         value={pages} onChange={e => setPages(e.target.value)} />
                     </label>
                     <label className="field">Genre:
@@ -254,24 +231,24 @@ async function sendForm (event) {
                         type="text"
                         name="genre"
                         required
-                        placeholder='Insert...'
+                        placeholder='Insérer...'
                         value={genre} onChange={e => setGenre(e.target.value)} />
                     </label>                    
-                    <label className="largeField">Summary:
+                    <label className="largeField">Description:
                         <br/>
                         <textarea
                         id="summary"
                         name="summary"
                         required
-                        placeholder='Insert...'
+                        placeholder='Insérer...'
                         value={summary} onChange={e => setSummary(e.target.value)} />
                     </label>
-                    <label className="field">Illustrator:
+                    <label className="field">Illustrateur:
                         <br/>
                         <input
                         type="text"
                         name="illustrator"
-                        placeholder='Insert...'
+                        placeholder='Insérer...'
                         value={illustrator} onChange={e => setIllustrator(e.target.value)} />
                     </label>
                     <label>Image:
@@ -279,16 +256,24 @@ async function sendForm (event) {
                         <input
                             type={"file"}
                             accept={"image/*"}
-                            onChange={(e) =>setImage(e.target.files[0])}
+                            onChange={(e) => {
+                                const file = e.target.files[0];
+                                const maxSize = 700 * 1024; // 700KB
+
+                                if (file && file.size > maxSize) {
+                                    alert('File is too large, please select a file less than 700KB.');
+                                    e.target.value = ''; // Clear the input.
+                                } else {
+                                    setImage(file);
+                                }
+                            }}
                         />
                     </label>
-                     <input type="submit" value="Submit" />
+                    <input type="submit" value="Submit" />
             </form>
             
-            {params.type === 'modify' ? <button onClick={() => navigate('/v1.0.0/books/add')}>Cancel</button> : null}
-            
-                
-           
+            {params.type === 'modify' ? <button onClick={() => navigate('/v1.0.0/books/add')}>Retour</button> : null}
+
         </>
     );
 }

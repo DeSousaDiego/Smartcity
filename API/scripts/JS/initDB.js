@@ -1,4 +1,4 @@
-const pool = require("../../modele/database");
+const pool = require("../../model/database");
 const fs = require("fs");
 const path = require("path");
 
@@ -7,8 +7,8 @@ async function initDB(){
     try{
         const query = fs.readFileSync(path.join(__dirname, "../SQL/createDB.SQL"), "utf-8");
         await client.query(query);
-    } catch (e) {
-        console.error(e);
+    } catch (error) {
+        console.error(error);
     } finally {
         client.release();
         await pool.end();

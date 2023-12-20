@@ -1,27 +1,11 @@
-// DataTable.js
-import '../stylesheet/backoffice.css'
-import {Link} from 'react-router-dom'
-import DeleteButton from './DeleteButton'
-import ModifyButton from './ModifyButton'
-import { Popover, Button } from 'antd';
+// DataTable.jss
 import React, { useEffect, useState } from 'react';
-import SearchBar from './searchBar';
-import { FaLink } from "react-icons/fa";
-import { FaCommentAlt } from "react-icons/fa";
-import { FaRegCircle } from "react-icons/fa";
-import { FaRegCheckCircle } from "react-icons/fa";
+import SearchBar from './SearchBar';
 import Pagination from './Pagination';
 import { useParams } from 'react-router-dom';
-import { useSelector } from 'react-redux'
+import { useSelector, useDispatch } from 'react-redux'
 import { loadUserData, loadBookData, loadReviewData, loadRoleData, loadActorData, loadCommentData, loadBestBookData } from '../store/dataBaseLoader';
-import { clearActors } from '../store/slice/actorSlice';
-import { clearBooks } from '../store/slice/bookSlice';
-import { clearReviews } from '../store/slice/reviewSlice';
-import { clearRoles } from '../store/slice/roleSlice';
-import { clearUsers } from '../store/slice/userSlice';
-import { clearComments } from '../store/slice/commentSlice';
-import { useDispatch } from 'react-redux';
-import { set } from 'zod';
+import TableRow from './TableRow'
 
 function DataTable() {
   const params = useParams();
@@ -32,23 +16,21 @@ function DataTable() {
   const dispatch = useDispatch();
   const [dataRows, setDataRows] = useState([]);
   const users = useSelector(state => state.users);
-  console.log("USERS DATATABLE : ", users);
   const books = useSelector(state => state.books);
   const reviews = useSelector(state => state.reviews);
   const comments = useSelector(state => state.comments);
   const roles = useSelector(state => state.roles);
   const actors = useSelector(state => state.actors);
   const token = useSelector(state => state.auth.token);
-  const userHeaders = ['ID', 'USERNAME', 'EMAIL', 'ROLE', 'COUNTRY', 'PHONE', 'NEWSLETTER', 'MODIFY', 'DELETE'];
-  const bookHeaders = ['ISBN', 'TITLE', 'AUTHOR', 'ILLUSTRATOR', 'RATING','DESCRIPTION', 'COUNTRY', 'GENRE', 'YEAR', 'PAGES', 'EDITOR', 'IMAGE'];
-  const reviewHeaders = ['ID', 'RATING', 'TITLE', 'CONTENT', 'LIKES', 'COMMENTS', 'USER', 'BOOK',  'MODIFY', 'DELETE'];
-  const roleHeaders = ['ID','BOOK', 'NAME', 'TITLE'];
-  const actorHeaders = ['ID', 'NAME'];
-  const commentHeaders = ['ID', 'CONTENT', 'LIKES', 'USER', 'MODIFY', 'DELETE'];
+  const userHeaders = ['ID', 'NOM D\'UTILISATEUR', 'EMAIL', 'RÔLE', 'PAYS', 'TÉLÉPHONE', 'NEWSLETTER', 'IMAGE', 'MODIFIER', 'SUPPRIMER'];
+  const bookHeaders = ['ISBN', 'TITRE', 'AUTEUR', 'ILLUSTRATEUR', 'ÉVALUATION', 'DESCRIPTION', 'PAYS', 'GENRE', 'ANNÉE', 'PAGES', 'ÉDITEUR', 'IMAGE'];
+  const reviewHeaders = ['ID', 'ÉVALUATION', 'TITRE', 'CONTENU', 'J\'AIME', 'COMMENTAIRES', 'UTILISATEUR', 'LIVRE', 'MODIFIER', 'SUPPRIMER'];
+  const roleHeaders = ['ID', 'LIVRE', 'NOM', 'TITRE'];
+  const actorHeaders = ['ID', 'NOM'];
+  const commentHeaders = ['ID', 'CONTENU', 'RATIO', 'UTILISATEUR', 'MODIFIER', 'SUPPRIMER'];  
 
 
   useEffect(() => {
-    console.log("useEffect A");
     const loadData = async () => {
       switch (params.name) {
         case 'users':
@@ -58,10 +40,10 @@ function DataTable() {
           await loadBookData(dispatch, token);
           break;
         case 'comments':
-          await loadCommentData(dispatch, params.id, token);
+          await loadCommentData(dispatch, (params.type === "add" ? 
+          parseInt(params.id) : parseInt(params.review_id)) , token);
           break;
         case 'reviews':
-          console.log("loadReviewData");
           await loadReviewData(dispatch, token);
           break;
         case 'roles':
@@ -78,12 +60,10 @@ function DataTable() {
       }
     };
     loadData();
-    console.log("useEffect");
     setPage(1);
   }, [params.name, users.status, books.status, reviews.status, comments.status, roles.status, actors.status]);
 
   useEffect(() => {
-    console.log("useEffect B");
     switch (params.name) {
       case 'users':
         setHeaders(userHeaders);
@@ -144,56 +124,24 @@ function DataTable() {
 
   return (
     <>
-     {rowsPerPage.length > 0 && (
-      <div className='tableContainer'>
-        <SearchBar searchTerm={searchTerm} onSearch={handleSearch} />
-        <table className="dataTable">
-          <thead>
-            <tr>
-              {headers.map(header => <th key={header}>{header}</th>)}
-            </tr>
-          </thead>
-          <tbody>
-            {rowsPerPage.map((dataRow) => (
-              <tr key={dataRow[0].content}>
-                {dataRow.map((dr, index) => (
-                  <td key={index}>
-                    {dr.type === "text" ? (
-                      dr.content
-                    ) : dr.type === "deleteButton" ? (
-                      <DeleteButton id={dataRow[0].content} />
-                    ) : dr.type === "modifyButton" ? (
-                      <ModifyButton id={dataRow[0].content} />
-                    ) : dr.type === "infosButton" ? (
-                      <>
-                        <Popover content={dr.content} trigger="click">
-                          <Button>
-                            <FaCommentAlt />
-                          </Button>
-                        </Popover>
-                      </>
-                    ) : dr.type === "commentsButton" ? (
-                      <Link to={'/comments/add/' + dataRow[0].content} ><FaLink /></Link>
-                    ) : dr.type === "image" ? (
-                      dr.content ? 
-                        dr.content : 
-                          null 
-                    ) : dr.type === "boolean" ? (
-                      dr.content ? (
-                      <FaRegCheckCircle />
-                    ) : (
-                      <FaRegCircle />
-                    )) : <></>
-                  }
-                  </td>
-                ))}
+      {rowsPerPage.length > 0 && (
+        <div className='tableContainer'>
+          <SearchBar searchTerm={searchTerm} onSearch={handleSearch} />
+          <table className="dataTable">
+            <thead>
+              <tr>
+                {headers.map(header => <th key={header}>{header}</th>)}
               </tr>
-            ))}
-          </tbody>
-        </table>
-        <Pagination totalPages={totalPages} currentPage={page} goToPage={goToPage} />
-      </div>
-     )}
+            </thead>
+            <tbody>
+              {rowsPerPage.map((dataRow) => (
+                <TableRow dataRow={dataRow} />
+              ))}
+            </tbody>
+          </table>
+          <Pagination totalPages={totalPages} currentPage={page} goToPage={goToPage} />
+        </div>
+      )}
     </>
   );
 }

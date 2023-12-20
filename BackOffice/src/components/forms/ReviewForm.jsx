@@ -1,14 +1,13 @@
-import { useState } from 'react';
-import '../../stylesheet/backoffice.css';
-import { useNavigate } from 'react-router-dom';
-import { useParams } from 'react-router-dom';
-import { useEffect } from 'react';
+import { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { sendForm as APISendForm } from '../../API/review';
 import { updateReview as APIUpdateReview } from '../../API/review';
 import { getReviewById } from '../../API/review';
 import { getBookById } from '../../API/book';
 import { setReview, updateReview } from '../../store/slice/reviewSlice';
 import { useDispatch, useSelector } from 'react-redux';
+import { reviewSchema } from './ValidationSchemas';
+import { errorHandling } from '../../error/errorHandling';
 
 function ReviewForm(){
     const params = useParams();
@@ -16,15 +15,16 @@ function ReviewForm(){
     const[title, setTitle] = useState('');
     const[content, setContent] = useState('');
     const[rating, setRating] = useState('');
+    let errorMsg = "";
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const newID = useSelector(state => state.reviews.reviews.length + 1);
+    const bookList = useSelector(state => state.books.books);
     const token = useSelector(state => state.auth.token);
 
 
     useEffect(() => {
         if(params.type === 'modify'){
-            console.log('params.id', params.id);
             getReviewById(parseInt(params.id), token)
             .then((response) => {
                 setBookISBN(response.book_id);
@@ -32,7 +32,8 @@ function ReviewForm(){
                 setContent(response.content);
                 setRating(response.rating); 
             }).catch((error) => {
-                console.log(error);
+                errorMsg = errorHandling(error);
+                alert(errorMsg);
             });
         }
         else if(params.type === 'add'){
@@ -46,47 +47,65 @@ function ReviewForm(){
 
     async function sendForm(event){
         const formData = new FormData();
-        event.preventDefault();                
-        const book = await getBookById(bookISBN, token);
-        formData.append('title', title);
-        formData.append('content', content);
-        formData.append('rating', rating);
+        event.preventDefault();
+        try {
+            reviewSchema.parse({
+                isbn: bookISBN,
+                title,
+                content,
+                rating: parseInt(rating)
+            }); 
+                           
+            const book = await getBookById(bookISBN, token);
+            formData.append('title', title);
+            formData.append('content', content);
+            formData.append('rating', rating);
 
-        const reviewData = [
-            {type: 'text', content: newID},
-            {type: 'text', content: rating},
-            {type: 'text', content: title},
-            {type: 'text', content: content},
-            {type: 'text', content: 0},
-            {type: 'commentsButton', content: 'Comments'},
-            {type: 'text', content: book.title},
-            {type: 'modifyButton', content: 'Modify'},
-            {type: 'deleteButton', content: 'Delete'}
-        ];
-        switch (params.type) {
-            case 'add':
-                formData.append('user_id', parseInt(params.id));
-                formData.append('book_id', bookISBN);
-
-                try {
-                    await APISendForm(formData, token);
-                    console.log('OK');
-                    alert('The review has been added to the database');
-                    dispatch(setReview(reviewData));
-                } catch (e) {
-                    console.log(e);
-                }
-                break;
-            case 'modify':
-                try {
-                    await APIUpdateReview(params.id, formData, token);
-                    console.log('OK');
-                    alert('The review has been modified');
-                    dispatch(updateReview(params.id));
-                } catch (e) {
-                    console.log(e);
-                }
-                break;             
+            const reviewData = [
+                {type: 'text', content: newID},
+                {type: 'text', content: rating},
+                {type: 'text', content: title},
+                {type: 'text', content: content},
+                {type: 'text', content: 0},
+                {type: 'commentsButton', content: 'Comments'},
+                {type: 'text', content: book.title},
+                {type: 'modifyButton', content: 'Modify'},
+                {type: 'deleteButton', content: 'Delete'}
+            ];
+            switch (params.type) {
+                case 'add':
+                    formData.append('user_id', parseInt(params.id));
+                    formData.append('book_id', bookISBN);
+                    try{
+                        await APISendForm(formData, token);
+                        alert('The review has been added to the database');
+                        dispatch(setReview(reviewData));
+                    } catch (error) {
+                        errorMsg = errorHandling(error);
+                        alert(errorMsg);
+                    } 
+                    break;
+                case 'modify':
+                    try {
+                        await APIUpdateReview(params.id, formData, token);
+                        alert('The review has been modified');
+                        dispatch(updateReview(params.id));
+                    } catch (error) {
+                        errorMsg = errorHandling(error);
+                        alert(errorMsg);
+                    }
+                    break;             
+            }
+        }   catch (error) {
+            const validationErrors = error.errors.map((fieldError) => ({
+                fieldName: fieldError.path.join('.'),
+                error: fieldError.message,
+            }));
+        
+            const errorMsg = validationErrors
+                .map(({ fieldName, error }) => `${fieldName}: ${error}`)
+                .join('\n');
+            alert("Champs de formulaire incorrects : \n" + errorMsg);
         }
     }
 
@@ -96,40 +115,51 @@ function ReviewForm(){
             <form onSubmit={sendForm}>
 
                     {(params.type === 'add' ? 
-                    <label className="field">Book ISBN:
+                    <label className="field">Titre du livre:
                         <br/>
-                        <input
-                        type="text"
-                        name="bookISBN"
-                        placeholder='Insert...'
-                        value={bookISBN} onChange={e => setBookISBN(e.target.value)} 
-                        />
+                        <select 
+                            value={bookISBN} 
+                            required
+                            onChange={e => setBookISBN(e.target.value)}
+                        >
+                            <option value="">Choisissez un livre</option>
+                            {
+                                bookList.map(book => (
+                                    <option key={book[0].content} value={book[0].content}>
+                                        {book[1].content}
+                                    </option>
+                                ))
+                            }
+                        </select>
                     </label> : <></>)}
-                    <label className="field">Title:
+                    <label className="field">Titre:
                         <br/>
                         <input
                         type="text"
                         name="title"
-                        placeholder='Insert...'
+                        required
+                        placeholder='Insérer...'
                         value={title} onChange={e => setTitle(e.target.value)} />
                     </label>
-                    <label className="largeField">Content:
+                    <label className="largeField">Contenu:
                         <br/>
                         <textarea
                         type="text"
                         name="contentReview"
-                        placeholder='Insert...'
+                        required
+                        placeholder='Insérer...'
                         value={content} onChange={e => setContent(e.target.value)} />
                     </label>
-                    <label className="field">Rating:
+                    <label className="field">Note:
                         <br/>
                         <input
                         type="number"
                         name="rating"
-                        placeholder='Insert...'
+                        required
+                        placeholder='Insérer...'
                         value={rating} onChange={e => setRating(e.target.value)} />
                     </label> 
-                    {params.type === 'modify' ? <button onClick={() => navigate('/v1.0.0/reviews/add')}>Cancel</button> : null}
+                    {params.type === 'modify' ? <button onClick={() => navigate('/v1.0.0/reviews/add')}>Retour</button> : null}
                     <input type="submit" value="Submit" />
             </form>
         </>

@@ -10,13 +10,13 @@ import { setComments, clearComments } from './slice/commentSlice';
 import { setUsers, clearUsers } from './slice/userSlice';
 import { setRoles, clearRoles } from './slice/roleSlice';
 import { setActors, clearActors } from './slice/actorSlice';
+import { errorHandling } from '../error/errorHandling';
 
-
+let errorMsg = "";
 const loadBookData = async(dispatch, token) =>{
     try {
         const bookDataRows = [];
         const books = await getAllBooks(token);
-        console.log("books database: ", books);
         books.forEach(book => {
             bookDataRows.push([
                 {type: 'text', content: book.isbn},
@@ -35,16 +35,10 @@ const loadBookData = async(dispatch, token) =>{
                 {type: 'deleteButton', content: 'Delete'}
             ]);
         });
-        console.log(bookDataRows);
         dispatch(setBooks(bookDataRows));
-        dispatch(clearUsers());
-        dispatch(clearReviews());
-        dispatch(clearComments());
-        dispatch(clearRoles());
-        dispatch(clearActors());
-        console.log("clear");
     } catch (error) {
-        console.error("Error fetching data: ", error);
+        errorMsg = errorHandling(error);
+        alert(errorMsg);
     }
 };
 
@@ -61,29 +55,22 @@ const loadUserData = async (dispatch, token) => {
                 {type: 'text', content: user.country},
                 {type: 'text', content: user.phone_number},
                 {type: 'boolean', content: user.news_letter},
+                {type: 'image', content: user.img_path ? user.img_path : 'none'},
                 {type: 'modifyButton', content: 'Modify'},
                 {type: 'deleteButton', content: 'Delete'}
             ]);
         });
-        console.log("userDataRows", userDataRows);
         dispatch(setUsers(userDataRows));
-        dispatch(clearBooks());
-        dispatch(clearReviews());
-        dispatch(clearComments());
-        dispatch(clearRoles());
-        dispatch(clearActors());
-        console.log("clear");
     } catch (error) {
-        console.error("Error fetching data: ", error);
+        errorMsg = errorHandling(error);
+        alert(errorMsg);
     }
 };
 
 const loadReviewData = async(dispatch, token) =>{
     try {
         const reviewDataRows = [];
-        console.log("coucou");
         const reviews = await getAllReviews(token);
-        console.log("reviews database: ", reviews);
         reviews.forEach(review => {
             reviewDataRows.push([
                 {type: 'text', content: review.id},
@@ -100,14 +87,11 @@ const loadReviewData = async(dispatch, token) =>{
 
         });
         dispatch(setReviews(reviewDataRows));
-        dispatch(clearBooks());
-        dispatch(clearUsers());
-        dispatch(clearComments());
-        dispatch(clearRoles());
-        dispatch(clearActors());
+        loadBookData(dispatch, token);
         
     } catch (error) {
-        console.error("Error fetching data: ", error);
+        errorMsg = errorHandling(error);
+        alert(errorMsg);
     }
 };
 
@@ -127,14 +111,10 @@ const loadCommentData = async(dispatch, id, token) =>{
 
         });
         dispatch(setComments(commentDataRows));
-        dispatch(clearBooks());
-        dispatch(clearUsers());
-        dispatch(clearReviews());
-        dispatch(clearRoles());
-        dispatch(clearActors());
         
     } catch (error) {
-        console.error("Error fetching data: ", error);
+        errorMsg = errorHandling(error);
+        alert(errorMsg);
     }
 };
 
@@ -142,7 +122,6 @@ const loadRoleData = async(dispatch, token) =>{
     try {
         const roleDataRows = [];
         const roles = await getAllRoles(token);
-        console.log("roles database: ", roles);
         roles.forEach(role => {
             roleDataRows.push([
                 {type: 'text', content: role.id},
@@ -153,14 +132,10 @@ const loadRoleData = async(dispatch, token) =>{
 
         });
         dispatch(setRoles(roleDataRows));
-        dispatch(clearBooks());
-        dispatch(clearUsers());
-        dispatch(clearReviews());
-        dispatch(clearComments());
-        dispatch(clearActors());
         
     } catch (error) {
-        console.error("Error fetching data: ", error);
+        errorMsg = errorHandling(error);
+        alert(errorMsg);
     }
 };
 
@@ -168,7 +143,6 @@ const loadActorData = async(dispatch, token) =>{
     try {
         const actorDataRows = [];
         const actors = await getAllActors(token);
-        console.log("actors database: ", actors);
         actors.forEach(actor => {
             actorDataRows.push([
                 {type: 'text', content: actor.id},
@@ -177,14 +151,10 @@ const loadActorData = async(dispatch, token) =>{
 
         });
         dispatch(setActors(actorDataRows));
-        dispatch(clearBooks());
-        dispatch(clearUsers());
-        dispatch(clearReviews());
-        dispatch(clearComments());
-        dispatch(clearRoles());
         
     } catch (error) {
-        console.error("Error fetching data: ", error);
+        errorMsg = errorHandling(error);
+        alert(errorMsg);
     }
 }
 
@@ -207,30 +177,11 @@ const loadBestBookData = async(dispatch, token) =>{
             { type: 'image', content: book.img_path }
         ]));
         dispatch(setBooks(bookDataRows));
-        dispatch(clearUsers());
-        dispatch(clearReviews());
-        dispatch(clearComments());
-        dispatch(clearRoles());
-        dispatch(clearActors());
     } catch (error) {
-        console.error("Error fetching data: ", error);
+        errorMsg = errorHandling(error);
+        alert(errorMsg);
     }
 };
-
-
-// export const loadDataBase = async (dispatch, token) => {
-//     try {
-//         await fetchBookData(dispatch, token);
-//         await fetchUserData(dispatch, token);
-//         await fetchReviewData(dispatch, token);
-//         // await fetchCommentData(dispatch, token);
-//         await fetchRoleData(dispatch, token);
-//         await fetchActorData(dispatch, token);
-//     }
-//     catch (err) {
-//         console.error(err);
-//     }
-// }
 
 export {loadBookData, loadUserData, loadReviewData, loadRoleData, loadActorData, loadCommentData, loadBestBookData};
 

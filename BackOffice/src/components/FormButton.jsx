@@ -8,10 +8,6 @@ function FormButton({ type, name, form }) {
 
   const toggleFormVisibility = () => {
     setIsFormVisible(!isFormVisible);
-    // if(type !== 'modify'){    
-    //   if (isFormVisible) { navigate('/' + name); }
-    //   else { navigate('/' + name + '/' + type); }
-    // }
   };
 
   return (

@@ -12,11 +12,10 @@ const sendForm = async (formData,token) => {
         'Accept-Version': versionNumber
       }
     });
-
-    // Retourne la réponse si nécessaire
     return response.data;
+    
   } catch (error) {
-    // Rejette la promesse avec l'erreur
+    console.error(error);
     throw error;
   }
 };
@@ -24,20 +23,24 @@ const sendForm = async (formData,token) => {
 
 
 const getAllBooks = async (token) => {
-
+  try{
     const response = await axios.get(bookURL, {
-      headers: {
-        'Authorization' : 'Bearer ' + token,
-        'Accept-Version': versionNumber
-      }
-    });
-    return response.data;
+    headers: {
+      'Authorization' : 'Bearer ' + token,
+      'Accept-Version': versionNumber
+    }
+  });
+  return response.data;
+  } 
+  catch (error) {
+    console.error(error);
+    throw error;
+  }
 };
 
 
 const getBookById = async (id, token) => {
-  console.log("id: ", id);
-  console.log("token: ", token);
+  try{
   const response = await axios.get(`${bookURL}/${id}`,{
     headers: {
       'Authorization' : 'Bearer ' + token,
@@ -45,9 +48,12 @@ const getBookById = async (id, token) => {
     }
   }
   );
-  console.log("${userURL}/${id}", `${bookURL}/${id}`);
-  console.log("response: ", response);
   return response.data;
+  }
+  catch(error){
+    console.error(error);
+    throw error;
+  }
 }
 const deleteBook = async (id,token) => {
 
@@ -60,12 +66,14 @@ const deleteBook = async (id,token) => {
       });
       return response.data;
 
-  } catch (err) {
-      console.error(err);
+  } catch (error) {
+      console.error(error);
+      throw error;
   }
 };
 
 const updateBook = async (formData,token) => {
+  try{
 
     return await axios.patch(bookURL, formData, {
         headers: {
@@ -74,11 +82,10 @@ const updateBook = async (formData,token) => {
           'Accept-Version': versionNumber
         }
       })
-      .then(response => {
-        console.log(response);
-      })
-      .catch(error => {
-        console.error(error);
-      });
-};
+  }
+  catch(error){ 
+    console.error(error);
+    throw error;
+  }
+}
 export{getAllBooks, updateBook, deleteBook, getBookById, sendForm}

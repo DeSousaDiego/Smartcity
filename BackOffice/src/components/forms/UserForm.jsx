@@ -1,13 +1,12 @@
-import '../../stylesheet/backoffice.css';
 import {sendForm as APISendForm } from '../../API/user';
 import { updateUser as APIUpdateUser, getUserById } from '../../API/user';
 import {useParams, useNavigate} from 'react-router-dom';
-import { useEffect, useState, useRef } from 'react';
-import { useSelector } from 'react-redux';
+import { useEffect, useState } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
 import countriesList from '../Countries';
 import { userSchema } from './ValidationSchemas';
 import { setUser, updateUser } from '../../store/slice/userSlice';
-import { useDispatch } from 'react-redux';
+import { errorHandling } from '../../error/errorHandling';
 
 
 
@@ -23,6 +22,7 @@ function UserForm(){
     const[newsletter, setNewsletter] = useState(false);
     const[image, setImage] = useState('');
     const newId = useSelector(state => state.users.users.length + 1);
+    let errorMsg = "";
 
     const navigate = useNavigate();
     const dispatch = useDispatch();
@@ -44,7 +44,8 @@ function UserForm(){
                 setNewsletter(response.news_letter);
             })
             .catch((error) => {
-                console.log(error);
+                errorMsg = errorHandling(error);
+                alert(errorMsg);
             });           
         }
         else if(params.type === 'add'){
@@ -86,7 +87,6 @@ async function sendForm (event) {
         {type: 'deleteButton', content: 'Delete'}
     ];
 
-    console.log("FormData: ", formData);
 
     if(params.type === 'add'){
             // formData.append('avatar', avatar.current);
@@ -101,13 +101,27 @@ async function sendForm (event) {
                     phone_number: phone,
                     news_letter: newsletter
                 });
-                await APISendForm(formData, token);
 
-                //write the alert here
-                alert('The user has been added to the database');
-                dispatch(setUser(userData));
-            } catch (e) {
-                console.log(e);
+                try {
+                    await APISendForm(formData, token);
+                    //write the alert here
+                    alert('The user has been added to the database');
+                    dispatch(setUser(userData));
+                } catch (error) {
+                    errorMsg = errorHandling(error);
+                    alert(errorMsg);
+                }
+            } catch (error) {
+                const validationErrors = error.errors.map((fieldError) => ({
+                    fieldName: fieldError.path.join('.'),
+                    error: fieldError.message,
+                }));
+            
+                errorMsg = validationErrors
+                    .map(({ fieldName, error }) => `${fieldName}: ${error}`)
+                    .join('\n');
+                
+                alert("Champs de formulaire incorrects : \n", errorMsg);
             }
         } else if(params.type === 'modify'){
 
@@ -117,9 +131,10 @@ async function sendForm (event) {
                 await APIUpdateUser(formData, token);
                 //write the alert here
                 alert('The user has been modified in the database');
-                dispatch(updateUser(params.id));
-            } catch (e) {
-                console.log(e);
+                dispatch(updateUser(userData));
+            } catch (error) {
+                errorMsg = errorHandling(error);
+                alert(errorMsg);
             }
         }
 }
@@ -128,7 +143,7 @@ async function sendForm (event) {
         //write the form here
         <>          
             <form onSubmit={sendForm}>
-                    <label className="field">Username:
+                    <label className="field">Nom d'utilisateur:
                         <br/>
                         <input 
                         type="text" 
@@ -136,7 +151,7 @@ async function sendForm (event) {
                         placeholder='Insert...'
                         value={username} onChange={e => setUsername(e.target.value)} />
                     </label>
-                    <label className="field">Password:
+                    <label className="field">Mot de passe:
                         <br/>
                         <input 
                         type="password" 
@@ -144,7 +159,7 @@ async function sendForm (event) {
                         placeholder='Insert...'
                         value={password} onChange={e => setPassword(e.target.value)} />
                     </label>
-                    <label className="field">Confirm Password:
+                    <label className="field">Confirmer Mot de Passe:
                         <br/>
                         <input 
                         type="password" 
@@ -169,14 +184,14 @@ async function sendForm (event) {
                             <option value="user">User</option>
                         </select>
                     </label>
-                    <label className="countryField">Country:
+                    <label className="countryField">Pays:
                         <br/>
                         <select 
                             name="country" 
                             value={country} 
                             onChange={e => setCountry(e.target.value)}
                         >
-                            <option value="">Select a country</option>
+                            <option value="">Sélectionner un pays</option>
                             {
                                 countriesList.map((country) => (
                                     <option key={country} value={country}>{country}</option>
@@ -184,7 +199,7 @@ async function sendForm (event) {
                             }
                         </select>
                     </label>
-                    <label className="field">Phone:
+                    <label className="field">Téléphone:
                         <br/>
                         <input 
                         type="tel" 
@@ -192,21 +207,32 @@ async function sendForm (event) {
                         placeholder='Insert...'
                         value={phone} onChange={e => setPhone(e.target.value)} />
                     </label>
-                    <label>Image:</label>
+                    <label>Image:
                         <br/>
                         <input
                             type={"file"}
                             accept={"image/*"}
-                            onChange={(e) =>setImage(e.target.files[0])}
+                            onChange={(e) => {
+                                const file = e.target.files[0];
+                                const maxSize = 700 * 1024; // 700KB
+
+                                if (file && file.size > maxSize) {
+                                    alert('File is too large, please select a file less than 700KB.');
+                                    e.target.value = ''; // Clear the input.
+                                } else {
+                                    setImage(file);
+                                }
+                            }}
                         />
+                        </label>
                     <label className="field"> 
                         <input 
                         type="checkbox" 
                         name="newsletter" 
                         checked={newsletter} onChange={e => setNewsletter(e.target.checked)} />
-                        Subscribe to Newsletter: 
+                        S'abonner à la newsletter: 
                     </label>
-                    {params.type === 'modify' ? <button onClick={() => navigate('/v1.0.0/users/add')}>Cancel</button> : null}
+                    {params.type === 'modify' ? <button onClick={() => navigate('/v1.0.0/users/add')}>Retour</button> : null}
                     <input type="submit" value="Submit" />
             </form>
                 

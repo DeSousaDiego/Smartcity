@@ -20,7 +20,6 @@ const commentsSlice = createSlice({
             state.nbUpdate = 0;
         },
         setComment: (state, action) => {
-            state.comments.push(action.payload);
             state.status = 'adding ' + (state.comments.length + 1);
         },
         updateComment: (state, action) => {

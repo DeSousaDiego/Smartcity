@@ -1,16 +1,22 @@
-const AuthoMiddleware = require("../middleware/Authorization");
 const JWTMiddleWare = require("../middleware/IdentificationJWT");
-const UserControleur = require('../controleur/userDB');
+const UserController = require('../controller/userDB');
 
 const Router = require("express-promise-router");
 const router = new Router;
 const multer = require("multer");
-const upload = multer();
+const storage = multer.memoryStorage();
+const upload = multer({
+    limits: {
+        fileSize: 700000, // 700Ko
+        files : 1
+    },
+    storage: storage
+});
 
-router.get('/', JWTMiddleWare.identification, UserControleur.getAllUsers);
-router.get('/:id', JWTMiddleWare.identification, UserControleur.getUserById);
+router.get('/', JWTMiddleWare.identification, UserController.getAllUsers);
+router.get('/:id', JWTMiddleWare.identification, UserController.getUserById);
 
-router.post('/', upload.fields([
+router.post('/', JWTMiddleWare.identification, upload.fields([
     {name: 'username', maxCount: 1},
     {name: 'email_address', maxCount: 1},
     {name: 'password', maxCount: 1},
@@ -19,16 +25,19 @@ router.post('/', upload.fields([
     {name: 'phone_number', maxCount: 1},
     {name: 'news_letter', maxCount: 1},
     {name: 'image', maxCount: 1}
-]), JWTMiddleWare.identification, UserControleur.createUser);
+]) , UserController.createUser );
 
 router.post('/login',upload.fields([
     {name: 'username', maxCount: 1},
     {name: 'password', maxCount: 1}
-]), UserControleur.login);
+]), UserController.login);
 
-router.get('/logout', JWTMiddleWare.identification, UserControleur.logout);
 
-router.patch('/', upload.fields([
+router.post('/checkToken', JWTMiddleWare.identification, UserController.checkToken);
+
+router.post('/logout', JWTMiddleWare.identification, UserController.logout);
+
+router.patch('/', JWTMiddleWare.identification, upload.fields([
     {name: 'id', maxCount: 1},
     {name: 'username', maxCount: 1},
     {name: 'email_address', maxCount: 1},
@@ -38,10 +47,11 @@ router.patch('/', upload.fields([
     {name: 'phone_number', maxCount: 1},
     {name: 'news_letter', maxCount: 1},
     {name: 'image', maxCount: 1}
-]), JWTMiddleWare.identification, UserControleur.updateUser);
-router.delete('/:id', upload.fields([
+]), UserController.updateUser);
+
+router.delete('/:id', JWTMiddleWare.identification, upload.fields([
     {name: 'username', maxCount: 1},
     {name: 'password', maxCount: 1}
-]), JWTMiddleWare.identification, UserControleur.deleteUser);
+]), UserController.deleteUser);
 
 module.exports = router;

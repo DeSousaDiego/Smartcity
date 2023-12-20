@@ -1,16 +1,12 @@
-import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import '../../stylesheet/backoffice.css';
 import { useState } from 'react';
-import { login } from '../../API/user';
+import { login, checkToken } from '../../API/user';
 import { useDispatch } from 'react-redux';
 import { setToken } from '../../store/slice/authSlice';
-import { useSelector } from 'react-redux';
-
+import { errorHandling } from '../../error/errorHandling';
 
 function Login() {
     const dispatch = useDispatch();
-    const token = useSelector(state => state.auth.token);
     const navigate = useNavigate();
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
@@ -21,24 +17,20 @@ function Login() {
             formData.append('username', username);
             formData.append('password', password);
             const token = (await login(formData)).token;
+            const response = await checkToken(token);
             if(token !== undefined){
-                console.log("token Login: ", token);
                 dispatch(setToken(token));
-                console.log("done");
                 navigate('/v1.0.0/Acceuil');
             } else {
                 alert('Wrong username or password');
             }
             
-        } catch (e) {
-            alert('Server error');
+        } catch (error) {
+            const errorMsg = errorHandling(error);
+            alert(errorMsg);
         }
     };
 
-    // Write a function that will handle the login form submission
-    // It should prevent the default action of the event
-    // It should log the username and password to the console
-    // It should clear the form
     const handleSubmit = (e) => {
         e.preventDefault();
         APILogin();
@@ -47,25 +39,25 @@ function Login() {
     return (
         <>
             <form onSubmit={handleSubmit}>
-                <label className="field">Username:
+                <label className="field">Nom d'utilisateur:
                     <br/>
                     <input 
                     type="text" 
                     name="username" 
-                    placeholder='Insert...' 
+                    placeholder='Insérer...' 
                     value={username} onChange={e => setUsername(e.target.value)}
                     />
                 </label>
-                <label className="field">Password:
+                <label className="field">Mot de passe:
                     <br/>
                     <input 
                     type="password" 
                     name="password" 
-                    placeholder='Insert...' 
+                    placeholder='Insérer...' 
                     value={password} onChange={e => setPassword(e.target.value)}
                     />
                 </label>
-                <input type="submit" value="Submit" />
+                <input type="submit" value="Connection" />
             </form>
         </>
     );

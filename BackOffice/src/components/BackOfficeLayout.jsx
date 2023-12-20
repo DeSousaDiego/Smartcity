@@ -2,7 +2,7 @@ import React from 'react';
 import { Breadcrumb, Layout, theme } from 'antd';
 import Menu from './Menu';
 import LogoutButton from './LogoutButton';
-import '../stylesheet/backoffice.css';
+import '../stylesheet/App.css';
 import DataTable from './DataTable';
 
 const { Header, Content, Footer } = Layout;

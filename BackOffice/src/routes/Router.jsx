@@ -17,7 +17,7 @@ const router = createBrowserRouter([
         element: <Acceuil/>
     },
     {
-        path: "/v1.0.0/:name/:type/:id_review/:id_comment",
+        path: "/v1.0.0/:name/:type/:review_id/:comment_id",
         element: <Acceuil/>
     },
     {
@@ -29,9 +29,13 @@ const router = createBrowserRouter([
         element: <Login/>
     },
     {
-        path: "/v1.0.0/",
+        path: "/*",
         element: <Login/>
     },
+    {
+        path: "/v1.0.0/*",
+        element: <Login/>
+    }
 ]);
 
 export default router;

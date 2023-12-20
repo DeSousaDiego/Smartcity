@@ -2,13 +2,13 @@ DROP TABLE IF EXISTS book CASCADE;
 
 CREATE TABLE book (
     isbn VARCHAR PRIMARY KEY,
-    title VARCHAR NOT NULL CHECK (title ~ '^[A-Za-zÀ-ÖØ-öø-ÿ - 0-9]+$'),
-    description VARCHAR NOT NULL CHECK (description ~ '^[A-Za-zÀ-ÖØ-öø-ÿ0-9.,;:!?() -]+$'),
+    title VARCHAR NOT NULL,
+    description VARCHAR NOT NULL,
     country VARCHAR NOT NULL CHECK (country ~ '^[A-Za-zÀ-ÖØ-öø-ÿ -]+$'),
     genre VARCHAR NOT NULL CHECK (genre ~ '^[A-Za-zÀ-ÖØ-öø-ÿ -]+$'),
     released_year INTEGER NOT NULL CHECK (released_year >= 0),
     pages INTEGER NOT NULL CHECK (pages >= 0),
-    publishing_house VARCHAR NOT NULL CHECK (publishing_house ~ '^[A-Za-zÀ-ÖØ-öø-ÿ - &. 0-9]+$'),
+    publishing_house VARCHAR NOT NULL,
     img_path VARCHAR
 );
 
@@ -18,7 +18,15 @@ INSERT INTO book (isbn, title, description, country, genre, released_year, pages
 ('978-0-4515-2493-5', '1984', '1984 (Nineteen Eighty-Four) est le plus célèbre roman de George Orwell, publié en 1949. Il décrit une Grande-Bretagne trente ans après une guerre nucléaire entre lEst et lOuest censée avoir eu lieu dans les années 1950 et où sest instauré un régime de type totalitaire fortement inspiré à la fois du stalinisme et de certains éléments du nazisme. La liberté dépression et de pensée y est niée, et il est fait un grand usage de la novlangue (langage officiel qui vise à empêcher toute critique de Big Brother, le chef du Parti et de lÉtat), afin de réécrire lhistoire et de réduire le lexique.', 'Angleterre', 'Roman science-fiction', 1949, 328, 'Secker & Warburg', '1984.jpeg'),
 ('978-2-1234-5682-7', 'Le Trône de Fer', 'Le Trône de fer (A Song of Ice and Fire) est une série de romans de fantasy de George R. R. Martin, dont le premier tome est paru en 1996. Martin a commencé à lécrire en 1991 et le premier volume est paru en 1996 chez Bantam Books. Prévue à lorigine comme une trilogie, la série compte désormais cinq volumes publiés et deux autres sont attendus. Dautres tomes sont également attendus pour conclure la saga. Le cinquième volume, A Dance with Dragons, est paru le 12 juillet 2011 aux États-Unis et le 12 octobre 2011 en France.', 'États-Unis', 'Roman fantastique', 1996, 694, 'Bantam Spectra', 'tronedefer.jpeg'),
 ('978-2-1234-5683-4', 'Le Nom du Vent', 'Le Nom du vent (The Name of the Wind) est un roman de fantasy de Patrick Rothfuss, le premier de la série Chronique du tueur de roi. Il est paru en 2007 aux États-Unis et en 2009 en France. Le roman est un succès critique et commercial, et a été traduit dans une trentaine de langues. Il a reçu le prix Quill du meilleur roman de fantasy ou de science-fiction en 2007, ainsi que le prix Imaginales du meilleur roman étranger en 2010.', 'États-Unis', 'Roman fantastique', 2007, 672, 'DAW Books', 'nomduvent.jpeg'),
-('978-2-1234-5684-1', 'Le Livre des Radieux', 'Le Livre des Radieux (The Stormlight Archive) est une série de romans de fantasy écrite par Brandon Sanderson. Le premier tome, intitulé La Voie des rois, est paru en 2010 aux États-Unis et en 2014 en France. Le deuxième tome, Les Sables de duc, est paru en 2014 aux États-Unis et en 2016 en France. Le troisième tome, Oathbringer, est paru en 2017 aux États-Unis et en 2019 en France. Le quatrième tome, Rhythm of War, est paru en 2020 aux États-Unis et en 2021 en France.', 'États-Unis', 'Roman fantastique', 2010, 1280, 'Tor Books', 'livredesradieux.jpeg');
+('978-2-1234-5684-1', 'Le Livre des Radieux', 'Le Livre des Radieux (The Stormlight Archive) est une série de romans de fantasy écrite par Brandon Sanderson. Le premier tome, intitulé La Voie des rois, est paru en 2010 aux États-Unis et en 2014 en France. Le deuxième tome, Les Sables de duc, est paru en 2014 aux États-Unis et en 2016 en France. Le troisième tome, Oathbringer, est paru en 2017 aux États-Unis et en 2019 en France. Le quatrième tome, Rhythm of War, est paru en 2020 aux États-Unis et en 2021 en France.', 'États-Unis', 'Roman fantastique', 2010, 1280, 'Tor Books', 'livredesradieux.jpeg'),
+('978-2-1234-5685-8', 'Farenheit 451', 'Fahrenheit 451 est un roman de science-fiction dystopique de Ray Bradbury publié en 1953 aux États-Unis chez léditeur Ballantine Books. Le titre fait référence à la température à laquelle le papier de livre se met à brûler. Le roman a été adapté au cinéma en 1966 par François Truffaut.', 'États-Unis', 'Roman science-fiction', 1953, 158, 'Ballantine Books', 'farenheit451.jpeg'),
+('978-2-1234-5686-5', 'Le Comte de Monte-Cristo', 'Le Comte de Monte-Cristo est un roman dAlexandre Dumas, écrit avec la collaboration dAuguste Maquet et achevé en 1844. Il est partiellement inspiré de faits réels, empruntés à la vie de Pierre Picaud. Le héros du roman, Edmond Dantès, est victime dune machination et emprisonné au château dIf, où il reste dix-huit ans. Pendant son incarcération, il fait la connaissance de labbé Faria, qui lui révèle lemplacement dun fabuleux trésor. À la suite de son évasion, il pourra mettre la main sur ce trésor et entamer une nouvelle vie sous le nom de comte de Monte-Cristo.', 'France', 'Roman historique', 1844, 1276, 'Baudry', 'montecristo.jpeg'),
+('978-2-1234-5687-2', 'La conquête du pain', 'La Conquête du pain (The Conquest of Bread) est un essai politique de Pierre Kropotkine, paru en 1892. Il y développe sa conception de lanarchisme communiste, qui repose sur la théorie de la coopération et de la solidarité, en opposition à la théorie de la compétition et de la lutte pour la survie, défendue par Thomas Huxley, Herbert Spencer et Charles Darwin. Il y critique également le capitalisme et le socialisme dÉtat, et propose une organisation de la société reposant sur la libre association des producteurs.', 'France', 'Essai politique', 1892, 224, 'Nashville', 'conquetedupain.jpeg'),
+('978-2-1234-5688-9', 'Le Petit Prince', 'Le Petit Prince est une œuvre de langue française, la plus connue dAntoine de Saint-Exupéry. Publié en 1943 à New York simultanément à sa traduction anglaise, cest une œuvre poétique et philosophique sous lapparence dun conte pour enfants. Le langage, simple et dépouillé, parce quil est destiné à être compris par des enfants, est en réalité pour le narrateur le véhicule privilégié dune conception symbolique de la vie. Chaque chapitre relate une rencontre du petit prince qui laisse celui-ci perplexe quant au comportement absurde des grandes personnes. Chacune de ces rencontres peut être lue comme une allégorie. Elle prend ainsi valeur de parabole. Le livre est dédié à Léon Werth, mais quand il était petit, il avait lhabitude de lappeler « mon petit prince ».', 'France', 'Roman philosophique', 1943, 96, 'Reynal & Hitchcock', 'petitprince.jpeg'),
+('978-2-1234-5689-6', 'Le Rouge et le Noir', 'Le Rouge et le Noir est un roman de Stendhal, publié en 1830. Il est souvent considéré comme le plus grand roman de Stendhal et comme un des plus grands romans du XIXe siècle. Il est régulièrement cité comme un des romans fondateurs du roman moderne. Le Rouge et le Noir est un roman dapprentissage qui décrit la progression dun jeune homme ambitieux et énergique, Julien Sorel, dans la société de la Restauration. Julien Sorel est le fils dun charpentier de Verrières, petite ville de Franche-Comté. Il est doué pour les études et son père, qui a de grandes ambitions pour lui, le destine à la prêtrise. Julien, qui a lu Voltaire et Rousseau, est révolté par la société de son temps et par la religion. Il se rend à Besançon, où il est engagé comme précepteur par le maire de Verrières, Monsieur de Rênal, qui a cinq enfants.', 'France', 'Roman historique', 1830, 608, 'Levasseur', 'rougeetnoir.jpeg'),
+('978-2-1234-5690-2', 'Les Misérables', 'Les Misérables est un roman de Victor Hugo paru en 1862. Il a donné lieu à de nombreuses adaptations, au cinéma et sur de nombreux autres supports. Le roman raconte la vie de pauvres gens au XIXe siècle en France et de deux personnages principaux : Jean Valjean, un ancien forçat qui a connu la misère et qui est poursuivi par un inspecteur de police, Javert, après avoir enfreint sa condition de libéré ; et Fantine, ouvrière obligée de laisser son enfant Cosette aux Thénardier, un couple d aubergistes cupides, pour trouver du travail à la ville. Le roman est un plaidoyer en faveur des classes défavorisées, une analyse politique et sociale de la France du XIXe siècle, une œuvre monumentale où se mêlent lhistoire, la politique, la philosophie, la justice, la religion, lamour, larchitecture du Paris de lépoque, mais aussi lhistoire de lart et la construction des barricades.', 'France', 'Roman historique', 1862, 1900, 'A. Lacroix, Verboeckhoven & Cie', 'miserables.jpeg'),
+('978-2-1234-5691-9', 'ReactNefario', 'ReactNefario est un livre de programmation écrit par Benjamin Georges, publié en 2023. Il est souvent considéré comme le plus grand livre de programmation de Benjamin Georges et comme un des plus grands livres de programmation du XXIe siècle. Il est régulièrement cité comme un des livres fondateurs de la programmation moderne. ReactNefario est un livre dapprentissage qui décrit la progression d un jeune homme ambitieux et énergique, Benjamin Georges, dans la société de la programmation. Benjamin Georges est le fils d un développeur de Verrières, petite ville de Franche-Comté. Il est doué pour les études et son père, qui a de grandes ambitions pour lui, le destine à la programmation. Benjamin, qui a lu React et Nefario, est révolté par la société de son temps et par la programmation. Il se rend à Besançon, où il est engagé comme développeur par le maire de Verrières, Monsieur de Rênal, qui a cinq enfants.', 'France', 'Roman historique', 2023, 608, 'Levasseur', 'reactnefario.jpeg');
+
 DROP TABLE IF EXISTS actor CASCADE;
 
 CREATE TABLE actor (
@@ -33,7 +41,9 @@ INSERT INTO actor(name) VALUES
     ('George R. R. Martin'),
     ('Patrick Rothfuss'),
     ('Brandon Sanderson'),
-    ('Tomie DePaola');
+    ('Tomie DePaola'),
+    ('Benjamin Georges'),
+    ('Laura Ramonfosse');
 
 DROP TABLE IF EXISTS role CASCADE;
 
@@ -57,7 +67,9 @@ INSERT INTO role (title, id_book, id_actor) VALUES
     ('author', '978-2-1234-5683-4', 4),
     ('illustrator', '978-2-1234-5683-4', 6),
     ('author', '978-2-1234-5684-1', 5),
-    ('illustrator', '978-2-1234-5684-1', 6);
+    ('illustrator', '978-2-1234-5684-1', 6),
+    ('author', '978-2-1234-5691-9', 7),
+    ('illustrator', '978-2-1234-5691-9', 8);
 
 
 DROP TABLE IF EXISTS account CASCADE;
@@ -76,11 +88,11 @@ CREATE TABLE  account(
 
 
 INSERT INTO account (username, email_address, password, role, country, phone_number, news_letter, profile_picture_path) VALUES 
-('Xx_DarkSasuke_xX', 'gougougagak@gougou.gak', 'password', 'user', 'France', '0123456789', true, 'sasuke.jpeg'),
-('Tevin', 'azgzgz@hotmail.com', '$2b$10$NoPg1zzNKCDXiGxqXfU00.HG.wYDVr12sFNqVn9bIqfLgkf.ANhuK', 'user', 'France', '0123456789', false, 'ronaldo.jpeg'),
-('CarlosMarcos', 'carlos.marcos@hotmail.fr', 'password', 'user', 'France', '0123456789', true, 'einstein.jpeg'),
-('truc', 'truc.coucou@bidule.chose', '$2b$10$7Dw1zrF1WMpgTp5dIW3dOOPLGiaBS/T5dZKGlq9gNYJCz8LzsFTDe', 'admin', 'Belgium', '+42 420/66.76.86', true, 'zola.jpeg'),
-('freddy', 'freddy.mercury@rhapsodia.song', '$2b$10$vht5LespLG4dFE/a6UMpEOy82GWqPjqbgNl1AUac6uWXggSXeROrm', 'user', 'Belgium', '+88 123/18.14.88', false, null);
+('Xx_DarkSasuke_xX', 'darkssasuke@gmail.com', '$2b$10$db1iynocGrVV8G7/AEBMFOpWdAWEZ8X1LlMPnp1uHdgs/T1CigOBG', 'user', 'France', '063258974', true, 'sasuke.jpeg'),
+('Tevin', 'tevin@hotmail.com', '$2b$10$xgTtKTyS.PXOI9BPdZ1yV.cZMagS73OUlWtfS9y8FOBetiR3vsr3i', 'user', 'France', '098587402', false, 'ronaldo.jpeg'),
+('CarlosMarcos', 'carlos.marcos@hotmail.fr', '$2b$10$rzoqvWbt.JaKsXsqkh1Q6uE6k0CtpVhpcR1qXoLqJliOwCknJ7lzi', 'user', 'France', '085145636', true, 'einstein.jpeg'),
+('EdgeLord', 'truc@outlook.com', '$2b$10$7Dw1zrF1WMpgTp5dIW3dOOPLGiaBS/T5dZKGlq9gNYJCz8LzsFTDe', 'admin', 'Belgium', '0492686593', true, 'zola.jpeg'),
+('freddy', 'freddy.mercury@skynet.be', '$2b$10$vht5LespLG4dFE/a6UMpEOy82GWqPjqbgNl1AUac6uWXggSXeROrm', 'user', 'Belgium', '069841520', false, null);
 
 DROP TABLE IF EXISTS review CASCADE;
 
@@ -100,20 +112,20 @@ INSERT INTO review (date, rating, title, content, likes_counter, dislikes_counte
 ('2021-04-01 12:00:00', 5, 'Super livre', 'J''ai adoré ce livre, je le recommande à tout le monde !', 420, 20, 1, '978-2-1234-5680-3'),
 ('2021-04-01 12:00:00', 4, 'Très bon livre', 'J''ai bien aimé ce livre, je le recommande à tout le monde !', 52, 368, 1, '978-2-1234-5681-0'),
 ('2021-04-01 12:00:00', 3, 'Bon livre', 'J''ai bien aimé ce livre, je le recommande à tout le monde !', 678, 387, 1, '978-0-4515-2493-5'),
-('2021-04-01 12:00:00', 2, 'Mauvais livre', 'J''ai pas aimé ce livre, je le recommande à tout le monde !', 387, 38, 2, '978-2-1234-5682-7'),
-('2021-04-01 12:00:00', 1, 'Très mauvais livre', 'J''ai détesté ce livre, je le recommande à tout le monde !', 45, 5, 4, '978-2-1234-5683-4'),
+('2021-04-01 12:00:00', 2, 'Mauvais livre', 'J''ai pas aimé ce livre, je ne recommande pas', 387, 38, 2, '978-2-1234-5682-7'),
+('2021-04-01 12:00:00', 1, 'Très mauvais livre', 'J''ai détesté ce livre, c''honteux de publier ca', 45, 5, 4, '978-2-1234-5683-4'),
 ('2021-04-01 12:00:00', 5, 'Super livre', 'J''ai adoré ce livre, je le recommande à tout le monde !', 54, 453, 2, '978-2-1234-5684-1'),
 ('2021-04-01 12:00:00', 4, 'Très bon livre', 'J''ai bien aimé ce livre, je le recommande à tout le monde !', 5, 2, 1, '978-2-1234-5680-3'),
 ('2021-04-01 12:00:00', 3, 'Bon livre', 'J''ai bien aimé ce livre, je le recommande à tout le monde !', 354, 387, 4, '978-2-1234-5681-0'),
-('2021-04-01 12:00:00', 2, 'Mauvais livre', 'J''ai pas aimé ce livre, je le recommande à tout le monde !', 7880, 321, 1, '978-0-4515-2493-5'),
-('2021-04-01 12:00:00', 1, 'Très mauvais livre', 'J''ai détesté ce livre, je le recommande à tout le monde !', 783, 354, 2, '978-2-1234-5682-7'),
+('2021-04-01 12:00:00', 2, 'Mauvais livre', 'J''ai pas aimé ce livre, je ne recommande pas', 7880, 321, 1, '978-0-4515-2493-5'),
+('2021-04-01 12:00:00', 1, 'Très mauvais livre', 'J''ai détesté ce livre, c''honteux de publier ca', 783, 354, 2, '978-2-1234-5682-7'),
 ('2021-04-01 12:00:00', 5, 'Super livre', 'J''ai adoré ce livre, je le recommande à tout le monde !', 354, 354, 2, '978-2-1234-5683-4'),
--- commentaire philosophique sur le livre 1984
 ('2021-04-01 12:00:00', 5, 'Littéralement 1984', 'Ca en dit long sur la société... On vit dans une société', 354, 354, 1, '978-2-1234-5684-1'),
 ('2021-04-01 12:00:00', 3, 'Bon livre', 'J''ai bien aimé ce livre, je le recommande à tout le monde !', 354, 354, 1, '978-2-1234-5680-3'),
-('2021-04-01 12:00:00', 2, 'Mauvais livre', 'J''ai pas aimé ce livre, je le recommande à tout le monde !', 354, 354, 2, '978-2-1234-5681-0'),
-('2021-04-01 12:00:00', 1, 'Très mauvais livre', 'J''ai détesté ce livre, je le recommande à tout le monde !', 354, 354, 4, '978-0-4515-2493-5'),
-('2021-04-01 12:00:00', 5, 'Super livre', 'J''ai adoré ce livre, je le recommande à tout le monde !', 354, 354, 2, '978-2-1234-5682-7');
+('2021-04-01 12:00:00', 2, 'Mauvais livre', 'J''ai pas aimé ce livre, je ne le recommande pas.', 354, 354, 2, '978-2-1234-5681-0'),
+('2021-04-01 12:00:00', 1, 'Très mauvais livre', 'J''ai détesté.', 354, 354, 4, '978-0-4515-2493-5'),
+('2021-04-01 12:00:00', 5, 'Super livre', 'J''ai adoré ce livre, je le recommande à tout le monde !', 354, 354, 2, '978-2-1234-5682-7'),
+('2021-04-01 12:00:00', 5, 'Super livre', 'J''ai adoré ce livre, je le recommande à tout le monde !', 354, 0, 2, '978-2-1234-5691-9');
 
 DROP TABLE IF EXISTS comment CASCADE;
 
@@ -137,7 +149,6 @@ INSERT INTO comment (content, date, likes_counter, dislikes_counter, review_id, 
 ('Je suis d accord avec toi, le livre est vraiment trop long', '2021-04-01 12:00:00', 345, 21, 5, 2),
 ('Je suis d accord avec toi, le livre est vraiment trop long', '2021-04-01 12:00:00', 0, 0, 6, 2),
 ('Je suis d accord avec toi, le livre est vraiment trop long', '2021-04-01 12:00:00', 354, 354, 7, 1),
-('Je suis claqué au sol en progra, et react pu la merde, oui je suis un rageu', '2021-04-01 12:00:00', 50, 6, 1, 1),
 ('Je suis d accord avec toi, le livre est vraiment trop long', '2021-04-01 12:00:00', 35, 1, 8, 2),
 ('Ils sont vraiment trop longs ces livres', '2021-04-01 12:00:00', 438, 384, 9, 2),
 ('Cette lecture est une merveille de la littérature', '2021-04-01 12:00:00', 34, 384, 10, 2),

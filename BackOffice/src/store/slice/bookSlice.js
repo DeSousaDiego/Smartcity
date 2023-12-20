@@ -20,7 +20,6 @@ const booksSlice = createSlice({
             state.nbUpdate = 0;
         },
         setBook: (state, action) => {
-            state.books.push(action.payload);
             state.status = 'adding ' + (state.books.length + 1);
         },
         updateBook: (state, action) => {

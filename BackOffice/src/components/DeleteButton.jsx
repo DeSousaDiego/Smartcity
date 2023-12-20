@@ -1,8 +1,6 @@
-import React from "react";
-import { useState } from "react";
+import React, { useState } from "react";
 import Popup from "reactjs-popup";
 import "reactjs-popup/dist/index.css";
-import "../stylesheet/backoffice.css";
 import { FaRegTrashAlt } from "react-icons/fa";
 import { deleteUser as deleteUserAPI } from "../API/user";
 import { deleteBook as deleteBookAPI } from "../API/book";
@@ -14,6 +12,7 @@ import {  deleteUser } from "../store/slice/userSlice";
 import { deleteBook } from "../store/slice/bookSlice";
 import { deleteReview } from "../store/slice/reviewSlice";
 import { deleteComment } from "../store/slice/commentSlice";
+import { errorHandling } from "../error/errorHandling";
 
 //write a button that delete a line from a table, that recieve the name of the table and the id of the line
  
@@ -21,6 +20,7 @@ function DeleteButton({id}) {
 
   
   const [showAlert, setShowAlert] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
   const params = useParams();
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -35,46 +35,45 @@ function DeleteButton({id}) {
           await (deleteUserAPI(id, token));
           alert("Utilisateur supprimé avec succès");
           dispatch(deleteUser(id));
-        } catch (e) {
-          alert("Erreur lors de la suppression");
-          console.log(e);
+        } catch (error) {
+          setErrorMsg(errorHandling(error));
+          alert(errorMsg);
         }
       }; 
       break;
       case "books" :
         deleteData = async() =>{
           try {
-            console.log("Voila l'id : ", id);
             await deleteBookAPI(id,token);
             alert("Livre supprimé avec succès");
             dispatch(deleteBook(id));
-          } catch (e) {
-            alert("Erreur lors de la suppression");
-            console.log(e);
+          } catch (error) {
+            setErrorMsg(errorHandling(error));
+            alert(errorMsg);
           }
         }
       break;
       case "reviews":
-        deleteData = async (id) => {  
+        deleteData = async () => {  
           try {
-            await deleteReviewAPI(id);
-            alert("Commentaire supprimé avec succès");
+            await deleteReviewAPI(id, token);
+            alert("Critique supprimé avec succès");
             dispatch(deleteReview(id));
-          } catch (e) {
-            alert("Erreur lors de la suppression");
-            console.log(e);
+          } catch (error) {
+            setErrorMsg(errorHandling(error));
+            alert(errorMsg);
           }
         };
       break;
       case "comments":
-        deleteData = async (id) => {  
+        deleteData = async () => {  
           try {
-            await deleteCommentAPI(id);
+            await deleteCommentAPI(id, token);
             alert("Commentaire supprimé avec succès");
             dispatch(deleteComment(id));
-          } catch (e) {
-            alert("Erreur lors de la suppression");
-            console.log(e);
+          } catch (error) {
+            setErrorMsg(errorHandling(error));
+            alert(errorMsg);
           }
         };
       }

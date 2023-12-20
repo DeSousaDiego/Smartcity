@@ -3,8 +3,7 @@ const userURL = "http://localhost:3001/user";
 const versionNumber = "1.0.0";
 
 const sendForm = async (formData, token) => {
-
-    console.log(formData);
+  try{
     return await axios.post(userURL, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
@@ -12,18 +11,14 @@ const sendForm = async (formData, token) => {
           'Accept-Version': versionNumber
         }
       })
-      .then(response => {
-        console.log(response);
-      })
-      .catch(error => {
-        console.error(error);
-      });
-    
-
+  } catch (error) {
+      throw error;
+  }
 };
 
 
 const getAllUsers = async (token) => {
+  try{
     //return an array of users
     const response = await axios.get(userURL, 
       {
@@ -33,36 +28,47 @@ const getAllUsers = async (token) => {
       }
     });
     return response.data;
+  } catch (error) {
+      console.error(error);
+      throw error;
+  }
 };
 
 const getUserById = async (id, token) => {
-    //return a user
-    const response = await axios.get(`${userURL}/${id}`, 
-    {
-    headers: {
-      'Authorization' : 'Bearer ' + token,
-      'Accept-Version': versionNumber
-    }
-  });
-    return response.data;
-}
-
-
-const deleteUser = async (id, token) => {
-    //delete a user
-    return await axios.delete(`${userURL}/${id}`
-    , {
+  try{
+      //return a user
+      const response = await axios.get(`${userURL}/${id}`, 
+      {
       headers: {
         'Authorization' : 'Bearer ' + token,
         'Accept-Version': versionNumber
       }
-    }).then(response => {
-      console.log("response: ", response);
-        return response;
-      })
+    });
+      return response.data;
+  } catch (error) {
+    console.error(error);
+      throw error;
+  }
+}
+
+
+const deleteUser = async (id, token) => {
+  try {
+    //delete a user
+    return await axios.delete(`${userURL}/${id}`, {
+      headers: {
+        'Authorization' : 'Bearer ' + token,
+        'Accept-Version': versionNumber
+      }
+    })
+  } catch (error) {
+      console.error(error);
+      throw error;
+  }
 }
 
 const updateUser = async (formData, token) => {
+  try {
     //return a user
     return await axios.patch(userURL, formData, {
         headers: {
@@ -71,20 +77,18 @@ const updateUser = async (formData, token) => {
           'Accept-Version': versionNumber
         }
       })
-      .then(response => {
-        console.log(response);
-      })
-      .catch(error => {
-        console.error(error);
-      });
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
 }
 
 const login = async (formData) => {
 
   return await axios.post(`${userURL}/login`, formData, {
-      headers: {
-          'Accept-Version': versionNumber
-      }
+    headers: {
+        'Accept-Version': versionNumber
+    }
   })
   .then(response => {
       const token = response.data.token;
@@ -92,28 +96,42 @@ const login = async (formData) => {
   })
   .catch(error => {
       console.error(error);
-      return error;
+      throw error;
   });
 }
 
 const logout = async (token) => {
+  return await axios.post(`${userURL}/logout`, {}, {
+    headers: {
+        'Authorization': 'Bearer ' + token,
+        'Accept-Version': versionNumber
+    }
+  })
+  .then(response => {
+      return response;
+  })
+  .catch(error => {
+      console.error(error);
+      throw error;
+  });
+}
 
-  return await axios.get(`${userURL}/logout`, {
+const checkToken = async (token) => {
+  return await axios.post(`${userURL}/checkToken`, {}, {
       headers: {
           'Authorization': 'Bearer ' + token,
           'Accept-Version': versionNumber
       }
   })
   .then(response => {
-      console.log("response: ", response);
       return response;
   })
   .catch(error => {
       console.error(error);
-      return error;
+      throw error;
   });
 }
 
 
 
-export {sendForm, getAllUsers, getUserById, deleteUser, updateUser, login, logout};
+export {sendForm, getAllUsers, getUserById, deleteUser, updateUser, login, logout, checkToken};

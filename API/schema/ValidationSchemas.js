@@ -61,7 +61,7 @@ const userSchema = z.object({
   message: 'Passwords must match',
 });
 
-userUpdateScheme = z.object({
+const userUpdateScheme = z.object({
   username: z.string().refine((username) => username.trim() !== '', {
     message: 'Username is required',
   }).optional(),
@@ -87,5 +87,22 @@ userUpdateScheme = z.object({
   message: 'Passwords must match',
 });
 
+const reviewSchema = z.object({
+  title: z.string().refine((title) => title.trim() !== '', {
+    message: 'Title is required',
+  }),
+  content: z.string().refine((content) => content.trim() !== '', {
+    message: 'Content is required',
+  }),
+  rating: z.number().refine((rating) => rating >= 0 && rating <= 5, {
+    message: 'Rating must be a positive number between 0 and 5 inclusive',
+  }),
+});
 
-module.exports = { bookSchema, userSchema, userUpdateScheme };
+const commentSchema = z.object({
+  content: z.string().refine((content) => content.trim() !== '', {
+    message: 'Content is required',
+  }),
+});
+
+module.exports = { bookSchema, userSchema, userUpdateScheme, reviewSchema, commentSchema };

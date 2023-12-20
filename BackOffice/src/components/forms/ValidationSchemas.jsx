@@ -62,4 +62,25 @@ const userSchema = z.object({
   message: 'Passwords must match',
 });
 
-export { bookSchema, userSchema };
+const reviewSchema = z.object({
+  isbn: z.string().refine((isbn) => /^\d{3}-\d-\d{4}-\d{4}-\d$/.test(isbn), {
+    message: 'ISBN must be in the format XXX-X-XXXX-XXXX-X',
+  }),
+  title: z.string().refine((title) => title.trim() !== '', {
+    message: 'Title is required',
+  }),
+  content: z.string().refine((content) => content.trim() !== '', {
+    message: 'Content is required',
+  }),
+  rating: z.number().refine((rating) => rating >= 0 && rating <= 5, {
+    message: 'Rating must be a positive number between 0 and 5 inclusive',
+  }),
+});
+
+const commentSchema = z.object({
+  content: z.string().refine((content) => content.trim() !== '', {
+    message: 'Content is required',
+  }),
+});
+
+export { bookSchema, userSchema, reviewSchema, commentSchema };

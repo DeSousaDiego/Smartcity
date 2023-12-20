@@ -1,4 +1,4 @@
-const BookControlleur = require('../controleur/bookDB');
+const BookController = require("../controller/bookDB");
 const AuthoMiddleware = require("../middleware/Authorization");
 const JWTMiddleWare = require("../middleware/IdentificationJWT");
 
@@ -39,7 +39,7 @@ const upload = multer({
  *              description: Erreur serveur
  *
  */
-router.get('/', JWTMiddleWare.identification, BookControlleur.getBooks);
+router.get('/', JWTMiddleWare.identification, BookController.getBooks);
 
 /**
  * @swagger
@@ -69,7 +69,7 @@ router.get('/', JWTMiddleWare.identification, BookControlleur.getBooks);
  *              description: Erreur serveur
  *
  */
-router.get('/:id', JWTMiddleWare.identification, BookControlleur.getBookByID);
+router.get('/:id', JWTMiddleWare.identification, BookController.getBookByID);
 
 
 /**
@@ -85,11 +85,11 @@ router.get('/:id', JWTMiddleWare.identification, BookControlleur.getBookByID);
  *      responses:
  *          201:
  *              $ref: '#/components/responses/BookAdded'
- *          400:
+ *          400: 
  *             description: |
  *              - Fichier image non valide
  *              - Formulaire non valide
- *              - $ref: '#/components/responses/ErrorJWT'
+ *              - Le JWT n'est pas valide
  *          401:
  *              $ref: '#/components/responses/MissingJWT'
  *          403:
@@ -110,7 +110,7 @@ router.post('/', JWTMiddleWare.identification, AuthoMiddleware.mustBeAdmin, uplo
     {name: 'illustrator', maxCount: 1},
     {name: 'publishing_house', maxCount: 1},
     {name : 'image', maxCount : 1}
-]), BookControlleur.createBook);
+]), BookController.createBook);
 
 
 /**
@@ -131,7 +131,7 @@ router.post('/', JWTMiddleWare.identification, AuthoMiddleware.mustBeAdmin, uplo
  *              - Fichier image non valide
  *              - ISBN manquant
  *              - Formulaire non valide
- *              - $ref: '#/components/responses/ErrorJWT'
+ *              - Le JWT n'est pas valide
  *          401:
  *              $ref: '#/components/responses/MissingJWT'
  *          403:
@@ -152,7 +152,7 @@ router.patch('/',JWTMiddleWare.identification, AuthoMiddleware.mustBeAdmin,uploa
     {name: 'illustrator', maxCount: 1},
     {name: 'publishing_house', maxCount: 1},
     {name : 'image', maxCount : 1}
-]),BookControlleur.updateBook);
+]),BookController.updateBook);
 
 
 /**
@@ -176,6 +176,6 @@ router.patch('/',JWTMiddleWare.identification, AuthoMiddleware.mustBeAdmin,uploa
  *              description: Erreur serveur
  *
  */
-router.delete('/:id',JWTMiddleWare.identification, AuthoMiddleware.mustBeAdmin,BookControlleur.deleteBook);
+router.delete('/:id',JWTMiddleWare.identification, AuthoMiddleware.mustBeAdmin,BookController.deleteBook);
 
 module.exports = router;
