@@ -86,7 +86,6 @@ const loadReviewData = async(dispatch, token) =>{
             ]);
 
         });
-        dispatch(clearComments());
         dispatch(setReviews(reviewDataRows));
         loadBookData(dispatch, token);
         
@@ -114,12 +113,8 @@ const loadCommentData = async(dispatch, id, token) =>{
         dispatch(setComments(commentDataRows));
         
     } catch (error) {
-        if(error.response.status === 404){
-            alert("Il n'y a pas de commentaires");
-          } else {
-            errorMsg = errorHandling(error);
-            alert(errorMsg);
-          }
+        errorMsg = errorHandling(error);
+        alert(errorMsg);
     }
 };
 
