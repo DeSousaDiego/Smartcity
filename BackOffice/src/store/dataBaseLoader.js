@@ -100,10 +100,6 @@ const loadCommentData = async(dispatch, id, token) =>{
     try {
         const commentDataRows = [];
         const comments = await getCommentsFromIdReview(id, token);
-        
-        if (comments.length === 0) {
-            alert("Il n'y a pas de commentaires");
-        } else {
         comments.forEach(comment => {
             commentDataRows.push([
                 {type: 'text', content: comment.id},
@@ -116,7 +112,6 @@ const loadCommentData = async(dispatch, id, token) =>{
 
         });
         dispatch(setComments(commentDataRows));
-    };
         
     } catch (error) {
         if(error.response.status === 404){
