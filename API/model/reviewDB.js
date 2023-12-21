@@ -42,10 +42,10 @@ module.exports.getReviewsId = async(isbn, client) =>{
 };
 
 module.exports.deleteBookReviews = async (isbn, reviewIds, client) => {
-    const reviewIdParams = reviewIds.map(review => review.id);
-    const reviewQuery = "DELETE FROM comment WHERE review_id IN ($1)";
-    await client.query(reviewQuery, [reviewIdParams]);
-
-    const bookQuery = "DELETE FROM review WHERE book_id = $1";
-    await client.query(bookQuery, [isbn]);
-};
+    const params = reviewIds.map(review => review.id);
+    let query = "DELETE FROM comment WHERE review_id = ANY($1::int[])";
+    if(params.length > 0){
+        await client.query(query, [params]);
+    }
+    return await client.query("DELETE FROM review WHERE book_id = $1", [isbn]);
+}
