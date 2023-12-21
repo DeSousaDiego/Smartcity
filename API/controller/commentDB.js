@@ -37,14 +37,7 @@ module.exports.getAllCommentsFromReviewId  = async (req, res) => {
             res.status(400).json("l'id doit etre un nombre");
         } else {
             const { rows: comments } = await commentModele.getAllCommentsFromReviewId(client, id);
-
-            if (comments.length > 0) {
-                // Si des commentaires sont trouvés, renvoyer tous les commentaires
-                res.json(comments);
-            } else {
-                // Si aucun commentaire n'est trouvé, renvoyer un statut 404
-                res.sendStatus(404);
-            }
+            res.json(comments);
         }
     } catch (error) {
         console.error(error);
