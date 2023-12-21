@@ -2,7 +2,7 @@ const { getHash } = require("../utils/utils.js");
 
 
 module.exports.getUserById = async (client, id) => {
-    return await client.query("SELECT * FROM account WHERE id = $1", [id]);
+    return await client.query("SELECT id, username, email_address, role, country, phone_number, news_letter, profile_picture_path FROM account WHERE id = $1", [id]);
   };
 
 module.exports.createUser = async (client, username, password, email_address, role, country, phone_number, news_letter, image) => {
